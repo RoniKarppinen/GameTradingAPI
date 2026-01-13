@@ -1,80 +1,75 @@
-# Meetings notes
+# Meetings minutes
 
 ## Meeting 1.
 * **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
+* **PARTICIPANTS:**
+* **TEACHER:**
 
 ### Action points
 *List here the actions points discussed with assistants*
 
-
+### Notes
+*Add here notes that you consider important. This is not mandatory*
 
 
 ## Meeting 2.
 * **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
+* **PARTICIPANTS:**
+* **TEACHER:**
 
 ### Action points
 *List here the actions points discussed with assistants*
 
-
+### Notes
+*Add here notes that you consider important. This is not mandatory*
 
 
 ## Meeting 3.
 * **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
+* **PARTICIPANTS:**
+* **TEACHER:**
 
 ### Action points
 *List here the actions points discussed with assistants*
 
-
+### Notes
+*Add here notes that you consider important. This is not mandatory*
 
 
 ## Meeting 4.
 * **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
+* **PARTICIPANTS:**
+* **TEACHER:**
 
 ### Action points
 *List here the actions points discussed with assistants*
 
-
+### Notes
+*Add here notes that you consider important. This is not mandatory*
 
 
 ## Midterm meeting
 * **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
+* **PARTICIPANTS:**
+* **TEACHER:**
 
 ### Action points
 *List here the actions points discussed with assistants*
 
-
+### Notes
+*Add here notes that you consider important. This is not mandatory*
 
 
 ## Final meeting
 * **DATE:**
-* **ASSISTANTS:**
+* **PARTICIPANTS:**
+* **TEACHER:**
 
 ### Minutes
 *Summary of what was discussed during the meeting*
 
-### Action points
-*List here the actions points discussed with assistants*
-
+### Notes
+*Add here notes that you consider important. This is not mandatory*
 
 
 
