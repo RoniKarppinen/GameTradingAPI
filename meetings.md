@@ -1,15 +1,18 @@
 # Meetings minutes
 
 ## Meeting 1.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** February 2nd
+* **PARTICIPANTS:** Luan Trieu, Roni Karppinen, Minttu Ukkola, Dain Han
+* **TEACHER:** Iván Sánchez Milara
 
 ### Action points
-*List here the actions points discussed with assistants*
+* Deliverable too technical, Not clear relations and Diagram was an acrhitecture diagram.
+* API description needs fixing, provided protocols, did not provide and example of the client/service
+* Wrongly classified API.
+* Teacher gave us some tips on the database.
 
 ### Notes
-*Add here notes that you consider important. This is not mandatory*
+We will update the wiki so it matches the requirements.
 
 
 ## Meeting 2.
