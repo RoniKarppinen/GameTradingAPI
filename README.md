@@ -20,7 +20,7 @@ python populate.py
 ```
 
 ## Database info
-* Database: SQLite version: 
+* Database: SQLite version: 3.50.4
 * ORM: Flask-SQLAlchemy
 
 # Group information
