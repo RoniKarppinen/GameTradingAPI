@@ -1,12 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.engine import Engine
+from sqlalchemy import event
+
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///GameTrade.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,7 +21,7 @@ class User(db.Model):
     email = db.Column(db.String(40), nullable=False, unique=True)
     password = db.Column(db.String(40), nullable=False)
 
-    game = db.relationship("Game", back_populates="owner", cascade="all, delete-orphan")
+    game = db.relationship("Game", back_populates="owner", passive_deletes = True)
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,8 +33,8 @@ class Game(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     owner = db.relationship("User", back_populates="game")
-    sender_trade = db.relationship("Trade",foreign_keys="Trade.sender_game_id", back_populates="sender_game", cascade="all, delete-orphan")
-    receiver_trade = db.relationship("Trade",foreign_keys="Trade.receiver_game_id",back_populates="receiver_game", cascade="all, delete-orphan")
+    sender_trade = db.relationship("Trade",foreign_keys="Trade.sender_game_id", back_populates="sender_game", passive_deletes=True)
+    receiver_trade = db.relationship("Trade",foreign_keys="Trade.receiver_game_id",back_populates="receiver_game", passive_deletes=True)
 
 class Trade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,3 +50,17 @@ if __name__ == "__main__":  #Clear the existing database for new population, cre
     with app.app_context():
         db.drop_all()
         db.create_all()
+
+        #Some test cases to try out ondelete logic
+
+        #game = Game.query.get(1)
+        #db.session.delete(game)
+        #db.session.commit()
+
+        #user = User.query.get(1)
+        #db.session.delete(user)
+        #db.session.commit()
+
+        #trade = Trade.query.get(1)
+        #db.session.delete(trade)
+        #db.session.commit()
