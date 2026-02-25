@@ -30,18 +30,18 @@ class Game(db.Model):
     image_path = db.Column(db.String(255), nullable=True)
     is_digital = db.Column(db.Boolean, nullable=False)
     is_traded = db.Column(db.Boolean, default=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"))
 
     owner = db.relationship("User", back_populates="game")
-    sender_trade = db.relationship("Trade",foreign_keys="Trade.sender_game_id", back_populates="sender_game", cascade="all, delete-orphan")
-    receiver_trade = db.relationship("Trade",foreign_keys="Trade.receiver_game_id",back_populates="receiver_game", cascade="all, delete-orphan")
+    sender_trade = db.relationship("Trade",foreign_keys="Trade.sender_game_id", back_populates="sender_game")
+    receiver_trade = db.relationship("Trade",foreign_keys="Trade.receiver_game_id",back_populates="receiver_game")
 
 class Trade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime)
     status = db.Column(db.String(20), default="Pending")
-    sender_game_id = db.Column(db.Integer, db.ForeignKey("game.id", ondelete="SET NULL"), nullable=False)
-    receiver_game_id = db.Column(db.Integer, db.ForeignKey("game.id", ondelete="SET NULL"), nullable=False)
+    sender_game_id = db.Column(db.Integer, db.ForeignKey("game.id", ondelete="SET NULL"))
+    receiver_game_id = db.Column(db.Integer, db.ForeignKey("game.id", ondelete="SET NULL"))
 
     sender_game = db.relationship("Game", foreign_keys="Trade.sender_game_id", back_populates="sender_trade")
     receiver_game = db.relationship("Game",foreign_keys ="Trade.receiver_game_id", back_populates="receiver_trade")
@@ -57,7 +57,7 @@ if __name__ == "__main__":  #Clear the existing database for new population, cre
         #db.session.delete(game)
         #db.session.commit()
 
-        #user = User.query.get(1)
+        #user = User.query.get(3)
         #db.session.delete(user)
         #db.session.commit()
 

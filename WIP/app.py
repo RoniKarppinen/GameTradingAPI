@@ -5,6 +5,7 @@ from werkzeug.exceptions import NotFound, BadRequest, UnsupportedMediaType
 from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
 from db import db, User, Game, Trade
+from sqlalchemy import or_
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///GameTrade.db"
@@ -13,7 +14,7 @@ db.init_app(app)
 api = Api(app)
 
 ###Resources start###
-class GameCollection(Resource):
+class GameCollection(Resource): #List all untraded games, ie all games available in trading hub
     def get(self):
         games = Game.query.filter_by(is_traded=False).all()
         collection = []
@@ -25,21 +26,21 @@ class GameCollection(Resource):
             })
         return collection,200
     
-class UserGameListing(Resource):  
+class UserGameListing(Resource):  #List game for user, get all user game listings, delete users game
     def post(self, user):
         
-        game = request.json
-        if not game:
+        data = request.json
+        if not data:
             raise UnsupportedMediaType
         try:
-            validate(request.json, self.json_schema(), format_checker=draft7_format_checker)
+            validate(request.json, self.json_schema("post"), format_checker=draft7_format_checker)
         except ValidationError as e:
             raise BadRequest(description=(str(e)))
 
-        title = game["title"]
-        description = game["description"]
-        is_digital = game["is_digital"]
-        image_path=game["image_path"]
+        title = data["title"]
+        description = data["description"]
+        is_digital = data["is_digital"]
+        image_path= data["image_path"]
         game = Game(
             title=title,
             description=description,
@@ -54,30 +55,81 @@ class UserGameListing(Resource):
         location = api.url_for(GameItem, game=game)
         return Response(status=201, headers={"Location":location})
     
-    @staticmethod
-    def json_schema():
-        schema = {
-            "type": "object",
-            "required": ["title", "is_digital"]
-        }
-        properties = schema["properties"] = {}
-        properties["title"] = {
-            "type": "string",
-            "maxLength": 100
-        }
-        properties["description"] = {
-            "type": "string",
-            "maxLength": 700
-        }
-        properties["is_digital"] = {
-            "type": "boolean"
-        }
-        properties["image_path"] = {
-            "type": "string"
-        }
-        return schema
+    def get(self, user):
+        games = Game.query.filter_by(owner = user).all()
+        collection = []
+        for g in games:
+            collection.append({
+                "id":g.id,
+                "title":g.title,
+                "owner":g.owner.username,
+            })
+        return collection,200
+    
+    def delete(self, user):
+        data = request.json
+        if not data:
+            raise UnsupportedMediaType
+        try:
+            validate(request.json, self.json_schema("delete"), format_checker=draft7_format_checker)
+        except ValidationError as e:
+            raise BadRequest(description=(str(e)))
+        
+        game = Game.query.get(data["id"])
 
-class GameItem(Resource):
+        if not game:
+            raise BadRequest(description="Game not found")
+        elif game.owner_id != user.id:
+            raise BadRequest(description="This is not your game")
+        else:
+            #source for or_ usage https://docs.sqlalchemy.org/en/13/orm/tutorial.html
+            #Trade status changes to declined if game related to it is removed
+            Trade.query.filter(or_(Trade.sender_game_id == game.id, Trade.receiver_game_id == game.id)).update(
+            {"status": "Declined"}
+            )
+
+        db.session.delete(game)
+        db.session.commit()
+
+        location = api.url_for(GameItem, game=game)
+        return Response(status=201, headers={"Location":location})
+        
+    
+    @staticmethod
+    def json_schema(action):
+            if action == "delete":
+                delete_schema = {
+                    "type": "object",
+                    "required": ["id"]
+                }
+                properties = delete_schema["properties"] = {}
+                properties["id"] = {
+                    "type": "integer"
+                }
+                return delete_schema
+            
+            schema = {
+                "type": "object",
+                "required": ["title", "is_digital"]
+            }
+            properties = schema["properties"] = {}
+            properties["title"] = {
+                "type": "string",
+                "maxLength": 100
+            }
+            properties["description"] = {
+                "type": "string",
+                "maxLength": 700
+            }
+            properties["is_digital"] = {
+                "type": "boolean"
+            }
+            properties["image_path"] = {
+                "type": "string"
+            }
+            return schema
+
+class GameItem(Resource):  #Get game info by id
     def get(self, game):
         game = {
                 "id":game.id,
@@ -90,23 +142,39 @@ class GameItem(Resource):
             }
         return game
 
-class SendTradeRequest(Resource):
+class SendTradeRequest(Resource): #Make trade request that does not exist with one game for another game of different owner
     def post(self):
-        trade = request.json
-        if not trade:
+        data = request.json
+        if not data:
             raise UnsupportedMediaType
         try:
             validate(request.json, self.json_schema(), format_checker=draft7_format_checker)
         except ValidationError as e:
             raise BadRequest(description=(str(e)))
         
-        sender_game = Game.query.get(trade["sender_game_id"])
-        receiver_game = Game.query.get(trade["receiver_game_id"])
+        sender_game = Game.query.get(data["sender_game_id"])
+        receiver_game = Game.query.get(data["receiver_game_id"])
+        sender_game_owner = sender_game.owner_id
+        receiver_game_owner = receiver_game.owner_id
+
+        if sender_game_owner == receiver_game_owner:
+            raise BadRequest(description="You can't trade with yourself, you dummy")
+    
+        
+        trade_exist = Trade.query.filter_by(
+            sender_game_id=sender_game.id,
+            receiver_game_id=receiver_game.id
+        ).first()
+
+        if trade_exist:
+            raise BadRequest(description="Trade already exists")
+        
         trade = Trade(
             sender_game=sender_game,
             receiver_game=receiver_game,
             timestamp=datetime.now()
         )
+       
 
         db.session.add(trade)
         db.session.commit()
@@ -143,10 +211,9 @@ class TradeItem(Resource):
         return trade
     """
     def put(self, trade):
-        trade = request.json
-        if not trade:
+        data = request.json
+        if not data:
             raise UnsupportedMediaType
-
         try:
             validate(request.json, self.json_schema(), format_checker=draft7_format_checker)
         except ValidationError as e:
