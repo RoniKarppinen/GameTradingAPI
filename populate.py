@@ -1,4 +1,4 @@
-from app import db, app, User, Game, Trade
+from db import db, app, User, Game, Trade
 from datetime import datetime
 
 with app.app_context():
@@ -10,8 +10,8 @@ with app.app_context():
     db.session.commit()
 
     game1 = Game(title="Meow meow game 2: Echoes of Nya", description="Cat game", is_digital=False, owner=user1)
-    game2 = Game(title="Furballdew valley",description="Cat game", is_digital=True, owner=user1)
-    game3 = Game(title="Grand theft Litter box V: Backyard",description="Cat game", is_digital=False, owner=user2)
+    game2 = Game(title="Furballdew valley",description="Cat game", is_digital=True, owner=user2)
+    game3 = Game(title="Grand theft Litter box V: Backyard",description="Cat game", is_digital=False, owner=user3)
     db.session.add_all([game1, game2, game3])
     db.session.commit()
 
