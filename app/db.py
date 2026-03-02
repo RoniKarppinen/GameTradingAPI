@@ -14,12 +14,18 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def set_sqlite_pragma(dbapi_connection): #, connection_record):
+    """
+    Enable foreign key support for SQLite.
+    """
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
 class User(db.Model):
+    """
+    User model representing a user in the game trading system.
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), nullable=False, unique=True)
     email = db.Column(db.String(40), nullable=False, unique=True)
@@ -28,6 +34,9 @@ class User(db.Model):
     game = db.relationship("Game", back_populates="owner", cascade="all, delete-orphan")
 
 class Game(db.Model):
+    """
+    Game model representing a game in the trading system.
+    """
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text(700), nullable=True, default="")
@@ -43,6 +52,9 @@ class Game(db.Model):
                                     back_populates="receiver_game")
 
 class Trade(db.Model):
+    """
+    Trade model representing a trade between two games in the trading system.
+    """
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime)
     status = db.Column(db.String(20), default="Pending")
