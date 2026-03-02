@@ -1,8 +1,8 @@
 """
 Module contains tests for the populate.py file.
 """
-import pytest
 import runpy
+import pytest
 from app.app import app
 from app.db import db, User, Game, Trade
 
