@@ -25,6 +25,8 @@
 - jsonschema
 - pytest
 - pytest-cov
+- runpy
+- pylint
 
 ## Setup & installation
 1. Install Dependencies:
@@ -55,6 +57,13 @@ flask run
 ```
 python -m pytest --cov=app --cov-report=term-missing tests/
 ```
+
+5. Running pylint
+* Run the following command from the root directory
+```
+python -m pylint app tests --disable=no-member,import-outside-toplevel,no-self-use
+```
+
 ## API entry point URL
 
 Currently the API is not deployed remotely anywhere.

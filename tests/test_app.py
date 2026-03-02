@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """
 Module contains tests for the app.py file.
 """

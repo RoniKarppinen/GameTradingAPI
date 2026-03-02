@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """
 Module contains tests for the populate.py file.
 """
