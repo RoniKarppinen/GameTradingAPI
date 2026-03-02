@@ -1,3 +1,8 @@
+"""
+Most of the code is modified from the exercise 2
+https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-apis-with-flask/
+If code has another source is it stated in adjacent to the code section
+"""
 from datetime import datetime
 from flask import Flask, request, Response
 from jsonschema import validate, ValidationError, draft7_format_checker
