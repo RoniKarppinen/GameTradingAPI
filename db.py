@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.engine import Engine
@@ -45,6 +47,26 @@ class Trade(db.Model):
 
     sender_game = db.relationship("Game", foreign_keys="Trade.sender_game_id", back_populates="sender_trade")
     receiver_game = db.relationship("Game",foreign_keys ="Trade.receiver_game_id", back_populates="receiver_trade")
+
+    # Inspiration from https://stackoverflow.com/questions/5022066/how-to-serialize-sqlalchemy-result-to-json
+    def to_dict(self):
+        """
+        Description: Convert the Trade object to a dictionary for JSON serialization.
+        Inputs: Self (the Trade object).
+        Outputs: A dictionary representation of the Trade object, with datetime fields converted to ISO format.
+        Exceptions: None.
+        """
+        result = {}
+        for column in self.__table__.columns:
+            name = column.name
+            value = getattr(self, name)
+
+            # Convert datetime to ISO.
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            
+            result[name] = value
+        return result
 
 if __name__ == "__main__":  #Clear the existing database for new population, create the database with models above
     with app.app_context():

@@ -387,17 +387,23 @@ class SendTradeRequest(Resource): #Make trade request that does not exist with o
         
 
 class TradeItem(Resource):
-    """TypeError: Object of type datetime is not JSON serializable, pitää hoitaa
+
     def get(self, trade):
-        trade = {
-                "id": trade.id,
-                "timestamp": trade.timestamp,
-                "status": trade.status,
-                "sender_game_id": trade.sender_game_id,
-                "receiver_game_id": trade.receiver_game_id
-            }
-        return trade
-    """
+        """
+        Description: Retrieve detailed information about a specific trade request by its id.
+        Inputs: The id of the trade request to be retrieved.
+        Outputs:
+            - Status code 200: A JSON object containing the trade request's details, including the following properties:
+                - id: An integer representing the trade request's unique identifier.
+                - timestamp: A string representing the date and time when the trade request was created (in ISO format).
+                - status: A string representing the current status of the trade request.
+                - sender_game_id: An integer representing the unique identifier of the game being offered in the trade.
+                - receiver_game_id: An integer representing the unique identifier of the game being requested in the trade.
+        Exceptions: None.
+        """
+        return trade.to_dict(), 200
+
+
     def put(self, trade):
         """
         Description: Update the status of a trade request.
