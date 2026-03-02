@@ -25,7 +25,6 @@
 - jsonschema
 - pytest
 - pytest-cov
-- runpy
 - pylint
 
 ## Setup & installation
@@ -38,22 +37,33 @@ pip install -r requirements.txt
 * Create the database structure: Run db.py to initialize the database.
 
 ```
-python db.py
+python app/db.py
 ```
 
 * Run populate.py to add sample users, games and trades
 ```
-python populate.py
+python app/populate.py
 ```
 
 3. Running the API:
-* Run the following command in the root directory to open the server
+* Run the following commands in the root directory to open the server
+
+```
+cd app
+```
+
 ```
 flask run
 ```
 
 4. Running tests
 * Run the following command in the root directory to run the tests and see the coverage.
+
+Run this only if you are inside directory app/
+```
+cd ..
+```
+
 ```
 python -m pytest --cov=app --cov-report=term-missing tests/
 ```
