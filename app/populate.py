@@ -1,4 +1,4 @@
-from db import db, app, User, Game, Trade
+from app.db import db, app, User, Game, Trade
 from datetime import datetime
 
 with app.app_context():

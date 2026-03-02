@@ -9,7 +9,7 @@ from jsonschema import validate, ValidationError, draft7_format_checker
 from werkzeug.exceptions import NotFound, BadRequest, UnsupportedMediaType
 from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
-from db import db, User, Game, Trade
+from app.db import db, User, Game, Trade
 from sqlalchemy import or_
 
 app = Flask(__name__)
@@ -61,10 +61,10 @@ class UserRegistration(Resource): #Register new user with unique username and em
         db.session.add(user)
         db.session.commit()
 
-        location = api.url_for(UserGameListing, username=user.username)
+        location = api.url_for(UserGameListing, user=user)
         return Response(status=201, headers={"Location":location})
 
-    # For development purposes, get all users or user info by username, should be removed in final version
+    # For development purposes, get all users or ushher info by username, should be removed in final version
     # def get(self, user=None):
     #     if user is None:
     #         users = User.query.all()
@@ -122,7 +122,7 @@ class UserDelete(Resource): #Delete user, all games and trades related to user a
         user = User.query.filter_by(username=username).first()
 
         if not user:
-            return NotFound(description="User not found"), 404
+            raise NotFound(description="User not found")
 
         for game in list(user.game):
             in_pending_trade = Trade.query.filter(
@@ -185,9 +185,9 @@ class UserGameListing(Resource):  #List game for user, get all user game listing
             raise BadRequest(description=(str(e)))
 
         title = data["title"]
-        description = data["description"]
+        description = data.get("description", "")
         is_digital = data["is_digital"]
-        image_path= data["image_path"]
+        image_path = data.get("image_path", "")
         game = Game(
             title=title,
             description=description,
@@ -429,7 +429,8 @@ class TradeItem(Resource):
         except ValidationError as e:
             raise BadRequest(description=(str(e)))
 
-        status = trade["status"]
+        status = data["status"]
+        trade.status = status
 
         if status == "Accepted":
             trade.sender_game.is_traded = True
