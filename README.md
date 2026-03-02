@@ -4,12 +4,17 @@
 ## Project layout
 
 ```text
+├── README.md               # Documentation
 ├── GameTrade.db            # Database file
-├── app.py                  # Main API logic
-├── db.py                   # Create the database
-├── populate.py             # Populate the database with data
 ├── requirements.txt        # Python dependencies
-└── README.md               # Documentation
+├── app                     
+│   ├── app.py              # Main API logic
+│   ├── db.py               # Main database logic
+│   └── populate.py         # Populate the database with synthetic data
+└── tests
+    ├── test_app.py         # Test the API logic
+    ├── test_populate.py    # Test populate logic
+    └── test_db.py          # Test database logic
 ```
 
 ## Libraries used
@@ -18,6 +23,8 @@
 - Flask-RESTful
 - Flask-SQLAlchemy
 - jsonschema
+- pytest
+- pytest-cov
 
 ## Setup & installation
 1. Install Dependencies:
@@ -38,9 +45,15 @@ python populate.py
 ```
 
 3. Running the API:
-* Run flask run in the root directory to open the server
+* Run the following command in the root directory to open the server
 ```
 flask run
+```
+
+4. Running tests
+* Run the following command in the root directory to run the tests and see the coverage.
+```
+python -m pytest --cov=app --cov-report=term-missing tests/
 ```
 ## API entry point URL
 
