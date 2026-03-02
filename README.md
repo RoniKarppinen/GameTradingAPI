@@ -5,9 +5,9 @@
 
 ```text
 ├── README.md               # Documentation
-├── GameTrade.db            # Database file
 ├── requirements.txt        # Python dependencies
-├── app                     
+├── app
+│   ├── GameTrade.db        # Database file                     
 │   ├── app.py              # Main API logic
 │   ├── db.py               # Main database logic
 │   └── populate.py         # Populate the database with synthetic data
