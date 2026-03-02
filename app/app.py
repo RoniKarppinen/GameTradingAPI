@@ -3,6 +3,7 @@ Most of the code is modified from the exercise 2
 https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-apis-with-flask/
 If code has another source is it stated in adjacent to the code section
 """
+import os
 from datetime import datetime
 from flask import Flask, request, Response
 from jsonschema import validate, ValidationError, draft7_format_checker
@@ -12,9 +13,9 @@ from flask_restful import Api, Resource
 from sqlalchemy import or_
 from app.db import db, User, Game, Trade
 
-
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///GameTrade.db"
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "GameTrade.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 api = Api(app)
@@ -69,7 +70,7 @@ class UserRegistration(Resource):
         location = api.url_for(UserGameListing, user=user)
         return Response(status=201, headers={"Location":location})
 
-    # For development purposes, get all users or user info by username
+    # # For development purposes, get all users or user info by username
     # def get(self, user=None):
     #     if user is None:
     #         users = User.query.all()

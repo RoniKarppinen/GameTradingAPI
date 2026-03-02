@@ -1,6 +1,7 @@
 """
 Most of the code is modified from the exercises
 """
+import os
 from datetime import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -9,12 +10,13 @@ from sqlalchemy import event
 
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///GameTrade.db"
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "GameTrade.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection): #, connection_record):
+def set_sqlite_pragma(dbapi_connection, connection_record):
     """
     Enable foreign key support for SQLite.
     """
