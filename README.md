@@ -59,11 +59,11 @@ flask run
 4. Running tests
 * Run the following command in the root directory to run the tests and see the coverage.
 
-Run this only if you are inside directory app/
+** Run this only if you are inside directory "app/"**
 ```
 cd ..
 ```
-
+Then run this
 ```
 python -m pytest --cov=app --cov-report=term-missing tests/
 ```
