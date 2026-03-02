@@ -1,5 +1,8 @@
-import pytest
+"""
+Module contains tests db.py file.
+"""
 from datetime import datetime
+import pytest
 from app.app import app
 from app.db import db, User, Game, Trade, reset_database
 
@@ -250,13 +253,13 @@ def test_query_pending_trades(db_session):
     db_session.session.add_all([game1, game2, game3])
     db_session.session.commit()
 
-    trade1 = Trade(sender_game=game1, receiver_game=game2, timestamp=datetime.now(), 
+    trade1 = Trade(sender_game=game1, receiver_game=game2, timestamp=datetime.now(),
                    status="Pending")
-    trade2 = Trade(sender_game=game3, receiver_game=game1, timestamp=datetime.now(), 
+    trade2 = Trade(sender_game=game3, receiver_game=game1, timestamp=datetime.now(),
                    status="Accepted")
     db_session.session.add_all([trade1, trade2])
     db_session.session.commit()
-    
+
     pending_trades = Trade.query.filter_by(status="Pending").all()
     assert len(pending_trades) == 1
     assert pending_trades[0].sender_game_id == game1.id
@@ -332,12 +335,12 @@ def test_reset_database_wipes_tables(db_session):
     temp_user = User(username="doomed_user", email="doomed@example.com", password="123")
     db_session.session.add(temp_user)
     db_session.session.commit()
-    
+
     # Verify the user is actually there
     assert User.query.count() == 1
-    
+
     # Call the function to reset the database
     reset_database()
-    
+
     # Database is cleared, so there should be no users
     assert User.query.count() == 0
