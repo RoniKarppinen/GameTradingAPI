@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 from app.app import app
-from app.db import db, User, Game, Trade
+from app.db import db, User, Game, Trade, reset_database
 
 # Reusable fixtures
 
@@ -258,3 +258,84 @@ def test_query_pending_trades(db_session):
     pending_trades = Trade.query.filter_by(status="Pending").all()
     assert len(pending_trades) == 1
     assert pending_trades[0].sender_game_id == game1.id
+
+# Tests for Trade.to_dict() method
+def test_trade_to_dict_keys(db_session):
+    """Test that to_dict() returns all expected keys."""
+    user1 = User(username="dict_user1", email="dict1@example.com", password="pass")
+    user2 = User(username="dict_user2", email="dict2@example.com", password="pass")
+    db_session.session.add_all([user1, user2])
+    db_session.session.commit()
+
+    game1 = Game(title="Dict Game A", is_digital=True, owner=user1)
+    game2 = Game(title="Dict Game B", is_digital=False, owner=user2)
+    db_session.session.add_all([game1, game2])
+    db_session.session.commit()
+
+    trade = Trade(sender_game=game1, receiver_game=game2, timestamp=datetime.now())
+    db_session.session.add(trade)
+    db_session.session.commit()
+
+    result = trade.to_dict()
+    assert set(result.keys()) == {"id", "timestamp", "status", "sender_game_id", "receiver_game_id"}
+
+def test_trade_to_dict_timestamp_is_iso_string(db_session):
+    """Test that to_dict() converts the timestamp to an ISO format string."""
+    user1 = User(username="dict_user3", email="dict3@example.com", password="pass")
+    user2 = User(username="dict_user4", email="dict4@example.com", password="pass")
+    db_session.session.add_all([user1, user2])
+    db_session.session.commit()
+
+    game1 = Game(title="Dict Game C", is_digital=True, owner=user1)
+    game2 = Game(title="Dict Game D", is_digital=False, owner=user2)
+    db_session.session.add_all([game1, game2])
+    db_session.session.commit()
+
+    ts = datetime(2024, 6, 15, 12, 30, 0)
+    trade = Trade(sender_game=game1, receiver_game=game2, timestamp=ts)
+    db_session.session.add(trade)
+    db_session.session.commit()
+
+    result = trade.to_dict()
+    assert isinstance(result["timestamp"], str)
+    assert result["timestamp"] == ts.isoformat()
+
+def test_trade_to_dict_values(db_session):
+    """Test that to_dict() returns correct field values."""
+    user1 = User(username="dict_user5", email="dict5@example.com", password="pass")
+    user2 = User(username="dict_user6", email="dict6@example.com", password="pass")
+    db_session.session.add_all([user1, user2])
+    db_session.session.commit()
+
+    game1 = Game(title="Dict Game E", is_digital=True, owner=user1)
+    game2 = Game(title="Dict Game F", is_digital=False, owner=user2)
+    db_session.session.add_all([game1, game2])
+    db_session.session.commit()
+
+    ts = datetime(2025, 1, 1, 0, 0, 0)
+    trade = Trade(sender_game=game1, receiver_game=game2, timestamp=ts, status="Accepted")
+    db_session.session.add(trade)
+    db_session.session.commit()
+
+    result = trade.to_dict()
+    assert result["id"] == trade.id
+    assert result["sender_game_id"] == game1.id
+    assert result["receiver_game_id"] == game2.id
+    assert result["status"] == "Accepted"
+    assert result["timestamp"] == ts.isoformat()
+
+def test_reset_database_wipes_tables(db_session):
+    """Test that reset_database drops and recreates all tables."""
+    # Add temp user
+    temp_user = User(username="doomed_user", email="doomed@example.com", password="123")
+    db_session.session.add(temp_user)
+    db_session.session.commit()
+    
+    # Verify the user is actually there
+    assert User.query.count() == 1
+    
+    # Call the function to reset the database
+    reset_database()
+    
+    # Database is cleared, so there should be no users
+    assert User.query.count() == 0

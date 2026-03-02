@@ -28,8 +28,8 @@ class User(db.Model):
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text(700), nullable=True)
-    image_path = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text(700), nullable=True, default="")
+    image_path = db.Column(db.String(255), nullable=True, default="")
     is_digital = db.Column(db.Boolean, nullable=False)
     is_traded = db.Column(db.Boolean, default=False)
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"))
@@ -68,21 +68,24 @@ class Trade(db.Model):
             result[name] = value
         return result
 
-if __name__ == "__main__":  #Clear the existing database for new population, create the database with models above
+def reset_database():
+    """Drops all tables and recreates them."""
     with app.app_context():
         db.drop_all()
         db.create_all()
+        
+if __name__ == "__main__":  #Clear the existing database for new population, create the database with models above
+    reset_database() # pragma: no cover
+    #Some test cases to try out ondelete logic
 
-        #Some test cases to try out ondelete logic
+    #game = Game.query.get(2)
+    #db.session.delete(game)
+    #db.session.commit()
 
-        #game = Game.query.get(2)
-        #db.session.delete(game)
-        #db.session.commit()
+    #user = User.query.get(3)
+    #db.session.delete(user)
+    #db.session.commit()
 
-        #user = User.query.get(3)
-        #db.session.delete(user)
-        #db.session.commit()
-
-        #trade = Trade.query.get(1)
-        #db.session.delete(trade)
-        #db.session.commit()
+    #trade = Trade.query.get(1)
+    #db.session.delete(trade)
+    #db.session.commit()
