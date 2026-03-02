@@ -25,7 +25,6 @@
 - jsonschema
 - pytest
 - pytest-cov
-- runpy
 - pylint
 
 ## Setup & installation
