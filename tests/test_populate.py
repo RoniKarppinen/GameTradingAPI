@@ -1,3 +1,6 @@
+"""
+Module contains tests for the populate.py file.
+"""
 import pytest
 import runpy
 from app.app import app
@@ -23,7 +26,7 @@ def test_populate_script_creates_records(test_db):
         # verify Users
         users = User.query.all()
         assert len(users) == 3
-        
+
         # Check specific user data
         fluffy = User.query.filter_by(username="Fluffy_cat").first()
         assert fluffy is not None
@@ -32,7 +35,7 @@ def test_populate_script_creates_records(test_db):
         # Verify Games
         games = Game.query.all()
         assert len(games) == 3
-        
+
         # Check specific game data
         furball = Game.query.filter_by(title="Furballdew valley").first()
         assert furball is not None
@@ -42,7 +45,7 @@ def test_populate_script_creates_records(test_db):
         # Verify Trades
         trades = Trade.query.all()
         assert len(trades) == 2
-        
+
         # Check specific trade data
         assert trades[0].status == "Pending"
         assert trades[0].sender_game.title == "Meow meow game 2: Echoes of Nya"

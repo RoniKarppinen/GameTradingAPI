@@ -28,7 +28,7 @@ def test_create_user(db_session):
     )
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     assert user.id is not None
     assert user.username == "testuser"
     assert user.email == "test@example.com"
@@ -43,7 +43,7 @@ def test_query_user_by_username(db_session):
     )
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     queried_user = User.query.filter_by(username="player1").first()
     assert queried_user is not None
     assert queried_user.email == "player1@example.com"
@@ -57,7 +57,7 @@ def test_query_user_by_email(db_session):
     )
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     queried_user = User.query.filter_by(email="player2@example.com").first()
     assert queried_user is not None
     assert queried_user.username == "player2"
@@ -66,10 +66,10 @@ def test_user_unique_username(db_session):
     """Test that usernames must be unique."""
     user1 = User(username="unique_user", email="user1@example.com", password="pass")
     user2 = User(username="unique_user", email="user2@example.com", password="pass")
-    
+
     db_session.session.add(user1)
     db_session.session.commit()
-    
+
     db_session.session.add(user2)
     with pytest.raises(Exception):  # Should raise an integrity error
         db_session.session.commit()
@@ -81,7 +81,7 @@ def test_create_game(db_session):
     user = User(username="owner", email="owner@example.com", password="pass")
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     game = Game(
         title="Super Mario Bros",
         description="Classic NES game",
@@ -91,7 +91,7 @@ def test_create_game(db_session):
     )
     db_session.session.add(game)
     db_session.session.commit()
-    
+
     assert game.id is not None
     assert game.title == "Super Mario Bros"
     assert game.is_traded is False
@@ -102,11 +102,11 @@ def test_game_default_values(db_session):
     user = User(username="owner2", email="owner2@example.com", password="pass")
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     game = Game(title="Game Title", is_digital=True, owner=user)
     db_session.session.add(game)
     db_session.session.commit()
-    
+
     assert game.description == ""
     assert game.image_path == ""
     assert game.is_traded is False
@@ -116,12 +116,12 @@ def test_game_owner_relationship(db_session):
     user = User(username="owner3", email="owner3@example.com", password="pass")
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     game1 = Game(title="Game 1", is_digital=True, owner=user)
     game2 = Game(title="Game 2", is_digital=False, owner=user)
     db_session.session.add_all([game1, game2])
     db_session.session.commit()
-    
+
     # Query the user and check their games
     user_from_db = User.query.get(user.id)
     assert len(user_from_db.game) == 2
@@ -134,12 +134,12 @@ def test_query_games_by_owner(db_session):
     user2 = User(username="owner5", email="owner5@example.com", password="pass")
     db_session.session.add_all([user1, user2])
     db_session.session.commit()
-    
+
     game1 = Game(title="User1 Game", is_digital=True, owner=user1)
     game2 = Game(title="User2 Game", is_digital=False, owner=user2)
     db_session.session.add_all([game1, game2])
     db_session.session.commit()
-    
+
     user1_games = Game.query.filter_by(owner=user1).all()
     assert len(user1_games) == 1
     assert user1_games[0].title == "User1 Game"
@@ -149,12 +149,12 @@ def test_query_untraded_games(db_session):
     user = User(username="owner6", email="owner6@example.com", password="pass")
     db_session.session.add(user)
     db_session.session.commit()
-    
+
     game1 = Game(title="Traded Game", is_digital=True, is_traded=True, owner=user)
     game2 = Game(title="Untraded Game", is_digital=False, is_traded=False, owner=user)
     db_session.session.add_all([game1, game2])
     db_session.session.commit()
-    
+
     untraded = Game.query.filter_by(is_traded=False).all()
     assert len(untraded) == 1
     assert untraded[0].title == "Untraded Game"
@@ -167,12 +167,12 @@ def test_create_trade(db_session):
     user2 = User(username="trader2", email="trader2@example.com", password="pass")
     db_session.session.add_all([user1, user2])
     db_session.session.commit()
-    
+
     game1 = Game(title="Game A", is_digital=True, owner=user1)
     game2 = Game(title="Game B", is_digital=False, owner=user2)
     db_session.session.add_all([game1, game2])
     db_session.session.commit()
-    
+
     trade = Trade(
         sender_game=game1,
         receiver_game=game2,
@@ -180,7 +180,7 @@ def test_create_trade(db_session):
     )
     db_session.session.add(trade)
     db_session.session.commit()
-    
+
     assert trade.id is not None
     assert trade.sender_game_id == game1.id
     assert trade.receiver_game_id == game2.id
@@ -192,12 +192,12 @@ def test_trade_relationships(db_session):
     user2 = User(username="trader4", email="trader4@example.com", password="pass")
     db_session.session.add_all([user1, user2])
     db_session.session.commit()
-    
+
     game1 = Game(title="Game C", is_digital=True, owner=user1)
     game2 = Game(title="Game D", is_digital=False, owner=user2)
     db_session.session.add_all([game1, game2])
     db_session.session.commit()
-    
+
     trade = Trade(
         sender_game=game1,
         receiver_game=game2,
@@ -205,7 +205,7 @@ def test_trade_relationships(db_session):
     )
     db_session.session.add(trade)
     db_session.session.commit()
-    
+
     # Query the trade and verify relationships
     trade_from_db = Trade.query.get(trade.id)
     assert trade_from_db.sender_game.title == "Game C"
@@ -217,12 +217,12 @@ def test_trade_status_update(db_session):
     user2 = User(username="trader6", email="trader6@example.com", password="pass")
     db_session.session.add_all([user1, user2])
     db_session.session.commit()
-    
+
     game1 = Game(title="Game E", is_digital=True, owner=user1)
     game2 = Game(title="Game F", is_digital=False, owner=user2)
     db_session.session.add_all([game1, game2])
     db_session.session.commit()
-    
+
     trade = Trade(
         sender_game=game1,
         receiver_game=game2,
@@ -230,10 +230,10 @@ def test_trade_status_update(db_session):
     )
     db_session.session.add(trade)
     db_session.session.commit()
-    
+
     trade.status = "Accepted"
     db_session.session.commit()
-    
+
     trade_from_db = Trade.query.get(trade.id)
     assert trade_from_db.status == "Accepted"
 
@@ -243,15 +243,17 @@ def test_query_pending_trades(db_session):
     user2 = User(username="trader8", email="trader8@example.com", password="pass")
     db_session.session.add_all([user1, user2])
     db_session.session.commit()
-    
+
     game1 = Game(title="Game G", is_digital=True, owner=user1)
     game2 = Game(title="Game H", is_digital=False, owner=user2)
     game3 = Game(title="Game I", is_digital=True, owner=user1)
     db_session.session.add_all([game1, game2, game3])
     db_session.session.commit()
-    
-    trade1 = Trade(sender_game=game1, receiver_game=game2, timestamp=datetime.now(), status="Pending")
-    trade2 = Trade(sender_game=game3, receiver_game=game1, timestamp=datetime.now(), status="Accepted")
+
+    trade1 = Trade(sender_game=game1, receiver_game=game2, timestamp=datetime.now(), 
+                   status="Pending")
+    trade2 = Trade(sender_game=game3, receiver_game=game1, timestamp=datetime.now(), 
+                   status="Accepted")
     db_session.session.add_all([trade1, trade2])
     db_session.session.commit()
     

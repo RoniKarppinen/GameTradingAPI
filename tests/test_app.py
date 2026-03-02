@@ -1,19 +1,23 @@
+"""
+Module contains tests for the app.py file.
+"""
 import pytest
 from app.app import app
-from app.db import db, User, Game, Trade
+from app.db import db, User
 
 # Reusable fixtures
 @pytest.fixture
 def client():
+    """Set up a test client and initialize the database for testing."""
     app.config["TESTING"] = True # Enable testing mode
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:" 
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 
-    with app.test_client() as client: # Create a test client for making API requests
+    with app.test_client() as test_client: # Create a test client for making API requests
         with app.app_context():
             db.create_all()
-        
-        yield client # Pause and return the client to the test function
-        
+
+        yield test_client # Pause and return the client to the test function
+
         with app.app_context(): # Remove session and drop all tables
             db.session.remove()
             db.drop_all()
@@ -71,7 +75,7 @@ def test_delete_user(client, create_test_users):
     """Test that a user can be deleted and is no longer accessible."""
     response = client.delete("/api/users/delete/player1/")
     assert response.status_code == 204
-    
+
     # Verify user is gone
     response = client.delete("/api/users/delete/player1/")
     assert response.status_code == 404
@@ -81,17 +85,17 @@ def test_delete_user_with_pending_trades(client, create_test_users):
     # Create games for both players
     client.post("/api/user/player1/games/", json={"title": "Game A", "is_digital": True})
     client.post("/api/user/player2/games/", json={"title": "Game B", "is_digital": True})
-    
+
     # Create a pending trade
     client.post("/api/trades/", json={
         "sender_game_id": 1,
         "receiver_game_id": 2
     })
-    
+
     # Delete sender of the trade
     response = client.delete("/api/users/delete/player1/")
     assert response.status_code == 204
-    
+
     # Verify player1 is deleted
     with app.app_context():
         player1 = User.query.filter_by(username="player1").first()
@@ -104,7 +108,7 @@ def test_register_user_duplicate_email(client, create_test_users):
         "email": "player1@test.com",
         "password": "password123"
     })
-    
+
     assert response.status_code == 400
     assert b"Email already exists" in response.data
 
@@ -124,7 +128,7 @@ def test_get_user_games(client, create_test_users):
     client.post("/api/user/player1/games/", json={
         "title": "Halo", "is_digital": True
     })
-    
+
     response = client.get("/api/user/player1/games/")
     assert response.status_code == 200
     assert len(response.json) == 1
@@ -147,23 +151,23 @@ def test_get_all_untraded_games(client, create_test_users):
     client.post("/api/user/player2/games/", json={
         "title": "Game C", "is_digital": True
     })
-    
+
     response = client.get("/api/games/")
     assert response.status_code == 200
     assert len(response.json) == 3
-    
+
     # Verify required fields
     for game in response.json:
         assert "id" in game
         assert "title" in game
         assert "owner" in game
-    
+
     # Verify titles
     titles = [game["title"] for game in response.json]
     assert "Game A" in titles
     assert "Game B" in titles
     assert "Game C" in titles
-    
+
     assert response.json[0]["owner"] == "player1"
     assert response.json[1]["owner"] == "player1"
     assert response.json[2]["owner"] == "player2"
@@ -173,7 +177,7 @@ def test_get_untraded_games_excludes_traded(client, create_test_users):
     client.post("/api/user/player1/games/", json={"title": "Game A", "is_digital": True})
     client.post("/api/user/player2/games/", json={"title": "Game B", "is_digital": True})
     client.post("/api/user/player2/games/", json={"title": "Game C", "is_digital": True})
-    
+
     # Create and accept a trade
     client.post("/api/trades/", json={
         "sender_game_id": 1,
@@ -182,11 +186,11 @@ def test_get_untraded_games_excludes_traded(client, create_test_users):
     client.put("/api/trades/1/", json={
         "status": "Accepted"
     })
-    
+
     # Get untraded games
     response = client.get("/api/games/")
     assert response.status_code == 200
-    
+
     # Should only have Game C
     assert len(response.json) == 1
     assert response.json[0]["title"] == "Game C"
@@ -219,7 +223,7 @@ def test_delete_user_game(client, create_test_users):
     client.post("/api/user/player1/games/", json={
         "title": "Zelda", "is_digital": False
     })
-    
+
     response = client.delete("/api/user/player1/games/", json={"id": 1})
     assert response.status_code == 201
 
@@ -263,7 +267,7 @@ def test_create_duplicate_trade_fails(client, setup_trade_scenario):
 def test_trade_with_self_fails(client, setup_trade_scenario):
     """Test that a user cannot create a trade with their own games."""
     client.post("/api/user/player1/games/", json={"title": "Game C", "is_digital": True})
-    
+
     # Tries to trade games that both belong to player1
     response = client.post("/api/trades/", json={
         "sender_game_id": 1,
@@ -299,13 +303,13 @@ def test_update_trade_status(client, setup_trade_scenario):
     client.post("/api/trades/", json={
         "sender_game_id": 1, "receiver_game_id": 2
     })
-    
+
     # Accept trade
     response = client.put("/api/trades/1/", json={
         "status": "Accepted"
     })
     assert response.status_code == 204
-    
+
     # Verify the games are marked as traded
     game1_response = client.get("/api/games/1/")
     assert game1_response.json["is_traded"] is True
@@ -316,11 +320,11 @@ def test_update_trade_status_missing_field(client, setup_trade_scenario):
         "sender_game_id": 1, 
         "receiver_game_id": 2
     })
-    
+
     response = client.put("/api/trades/1/", json={
         "wrong_key": "Accepted" 
     })
-    
+
     assert response.status_code == 400
     assert b"'status' is a required property" in response.data
 
@@ -330,11 +334,11 @@ def test_update_trade_status_invalid_enum(client, setup_trade_scenario):
         "sender_game_id": 1, 
         "receiver_game_id": 2
     })
-    
+
     response = client.put("/api/trades/1/", json={
         "status": "Maybe Later" 
     })
-    
+
     assert response.status_code == 400
     assert b"is not one of" in response.data
 
