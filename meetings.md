@@ -43,6 +43,7 @@ We will consider our options regarding the architecture and prioritize things th
 * Consider using Black foramtter
 * Check if pyproject.toml is better than the manual requirements.txt
 * Consider splitting app.py
+* Add cache and focus on explaining what is cached and why
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
