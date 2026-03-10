@@ -42,12 +42,19 @@ We will consider our options regarding the architecture and prioritize things th
 
 
 ## Meeting 4.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** March 10
+* **PARTICIPANTS:** Roni Karppinen, Minttu Ukkola, Luan Trieu
+* **TEACHER:** Mika Oja
 
 ### Action points
-*List here the actions points discussed with assistants*
+* Make the resources more RESTful
+* Some methods might be missing?
+* Create authentication by API key
+* App folder name to GameTrading
+* Gametrade.db removed from repository (Populate takes care of it)
+* Consider using Black foramtter
+* Check if pyproject.toml is better than the manual requirements.txt
+* Consider splitting app.py
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
