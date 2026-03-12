@@ -40,7 +40,7 @@ We will consider our options regarding the architecture and prioritize things th
 * Create authentication by API key
 * App folder name to GameTrading
 * Gametrade.db removed from repository (Populate takes care of it)
-* Consider using Black foramtter
+* Consider using Black formatter
 * Check if pyproject.toml is better than the manual requirements.txt
 * Consider splitting app.py
 * Add cache and focus on explaining what is cached and why
