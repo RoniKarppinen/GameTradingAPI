@@ -11,7 +11,7 @@ from werkzeug.exceptions import NotFound, BadRequest, UnsupportedMediaType
 from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
 from sqlalchemy import or_
-from app.db import db, User, Game, Trade
+from GameTrading.db import db, User, Game, Trade
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))

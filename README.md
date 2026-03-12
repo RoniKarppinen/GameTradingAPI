@@ -5,9 +5,8 @@
 
 ```text
 ├── README.md               # Documentation
-├── requirements.txt        # Python dependencies
-├── app
-│   ├── GameTrade.db        # Database file                     
+├── pyproject.toml          # Project configuration and dependencies
+├── GameTrading                     
 │   ├── app.py              # Main API logic
 │   ├── db.py               # Main database logic
 │   └── populate.py         # Populate the database with synthetic data
@@ -30,26 +29,26 @@
 ## Setup & installation
 1. Install Dependencies:
 ```
-pip install -r requirements.txt
+pip install ".[dev]"
 ```
 
 2. Database setup:
 * Create the database structure: Run db.py to initialize the database.
 
 ```
-python app/db.py
+python GameTrading/db.py
 ```
 
 * Run populate.py to add sample users, games and trades
 ```
-python app/populate.py
+python GameTrading/populate.py
 ```
 
 3. Running the API:
 * Run the following commands in the root directory to open the server
 
 ```
-cd app
+cd GameTrading
 ```
 
 ```
@@ -59,7 +58,7 @@ flask run
 4. Running tests
 * Run the following command in the root directory to run the tests and see the coverage.
 
-**Run this only if you are inside directory "app/"**
+**Run this only if you are inside directory "GameTrading/"**
 ```
 cd ..
 ```
@@ -69,13 +68,13 @@ Then run this
 
 
 ```
-python -m pytest --cov=app --cov-report=term-missing tests/
+python -m pytest
 ```
 
 5. Running pylint
 * Run the following command from the root directory
 ```
-python -m pylint app tests --disable=no-member,import-outside-toplevel,no-self-use
+python -m pylint GameTrading tests
 ```
 
 ## API entry point URL

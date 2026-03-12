@@ -1,6 +1,6 @@
 from datetime import datetime
-from app.db import db, User, Game, Trade
-from app.app import app
+from GameTrading.db import db, User, Game, Trade
+from GameTrading.app import app
 
 with app.app_context():
     user1 = User(username="Fluffy_cat", email=("FluffyCat@gmail.com"),

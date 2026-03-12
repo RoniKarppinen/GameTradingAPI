@@ -4,8 +4,8 @@ Module contains tests for the populate.py file.
 """
 import runpy
 import pytest
-from app.app import app
-from app.db import db, User, Game, Trade
+from GameTrading.app import app
+from GameTrading.db import db, User, Game, Trade
 
 @pytest.fixture
 def test_db():
@@ -22,7 +22,7 @@ def test_db():
 def test_populate_script_creates_records(test_db):
     """Test that the populate script correctly creates users, games, and trades."""
     with app.app_context():
-        runpy.run_module("app.populate")
+        runpy.run_module("GameTrading.populate")
 
         # verify Users
         users = User.query.all()

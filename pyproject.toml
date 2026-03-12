@@ -1,0 +1,34 @@
+[project]
+name = "GameTradingAPI"
+version = "0.1.0"
+description = "A RESTful API for trading games between users"
+requires-python = ">=3.9"
+
+dependencies = [
+    "Flask",
+    "Flask-RESTful",
+    "Flask-SQLAlchemy",
+    "jsonschema",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pylint",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=GameTrading --cov-report=term-missing"
+
+[tool.pylint.messages_control]
+disable = [
+    "no-member",
+    "import-outside-toplevel",
+    "no-self-use",
+]

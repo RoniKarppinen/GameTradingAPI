@@ -4,8 +4,8 @@ Module contains tests db.py file.
 """
 from datetime import datetime
 import pytest
-from app.app import app
-from app.db import db, User, Game, Trade, reset_database
+from GameTrading.app import app
+from GameTrading.db import db, User, Game, Trade, reset_database
 
 # Reusable fixtures
 

@@ -3,8 +3,8 @@
 Module contains tests for the app.py file.
 """
 import pytest
-from app.app import app
-from app.db import db, User
+from GameTrading.app import app
+from GameTrading.db import db, User
 
 # Reusable fixtures
 @pytest.fixture
