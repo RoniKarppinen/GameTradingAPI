@@ -3,8 +3,10 @@
 Module contains tests for the populate.py file.
 """
 import runpy
+import sys
 import pytest
 from GameTrading.app import app
+import GameTrading.db as db_module
 from GameTrading.db import db, User, Game, Trade
 
 @pytest.fixture
@@ -22,6 +24,8 @@ def test_db():
 def test_populate_script_creates_records(test_db):
     """Test that the populate script correctly creates users, games, and trades."""
     with app.app_context():
+        # populate.py imports from "db", so provide that alias in test runtime.
+        sys.modules["db"] = db_module
         runpy.run_module("GameTrading.populate")
 
         # verify Users
