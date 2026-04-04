@@ -1,0 +1,622 @@
+﻿openapi: 3.0.3
+info:
+  title: Game Trading API
+  version: 1.0.0
+  description: API documentation for the Game Trading system.
+servers:
+  - url: /api
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: GameTradeApi-Key
+
+  schemas:
+    UserCreate:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          maxLength: 40
+        email:
+          type: string
+          format: email
+          maxLength: 40
+        password:
+          type: string
+          maxLength: 40
+
+    User:
+      type: object
+      required:
+        - id
+        - username
+        - email
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+
+    UserPublic:
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+
+    GameCreate:
+      type: object
+      required:
+        - title
+        - is_digital
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 700
+        is_digital:
+          type: boolean
+        image_path:
+          type: string
+
+    GameSummary:
+      type: object
+      required:
+        - id
+        - title
+        - owner
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        owner:
+          type: string
+
+    GameDetails:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - image_path
+        - is_digital
+        - is_traded
+        - owner_id
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        image_path:
+          type: string
+        is_digital:
+          type: boolean
+        is_traded:
+          type: boolean
+        owner_id:
+          type: integer
+          nullable: true
+
+    TradeCreate:
+      type: object
+      required:
+        - sender_game_id
+        - receiver_game_id
+      properties:
+        sender_game_id:
+          type: integer
+        receiver_game_id:
+          type: integer
+
+    TradeStatusUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - Pending
+            - Accepted
+            - Declined
+
+    TradeSummary:
+      type: object
+      required:
+        - id
+        - status
+        - sender_game_id
+        - receiver_game_id
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+        sender_game_id:
+          type: integer
+          nullable: true
+        receiver_game_id:
+          type: integer
+          nullable: true
+
+    TradeDetails:
+      type: object
+      required:
+        - id
+        - timestamp
+        - status
+        - sender_game_id
+        - receiver_game_id
+      properties:
+        id:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+        sender_game_id:
+          type: integer
+          nullable: true
+        receiver_game_id:
+          type: integer
+          nullable: true
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad Request. The request was incomplete or contained invalid data.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Invalid request data.
+
+    Forbidden:
+      description: Forbidden. Missing or invalid API key, or operation is not allowed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Forbidden.
+
+    NotFound:
+      description: Not Found. The requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Resource not found.
+
+    UnsupportedMediaType:
+      description: Unsupported Media Type. The request body must be JSON.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: The request body must be JSON.
+
+    InternalServerError:
+      description: Internal Server Error. Unexpected server-side error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Internal server error.
+
+paths:
+  /users/:
+    get:
+      description: Retrieves all users currently stored in the database.
+      responses:
+        '200':
+          description: Successfully retrieved the list of users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                empty:
+                  value: []
+                with_users:
+                  value:
+                    - id: 1
+                      username: player1
+                      email: player1@test.com
+                    - id: 2
+                      username: player2
+                      email: player2@test.com
+
+    post:
+      description: Registers a new user.
+      requestBody:
+        description: JSON that contains data for the user.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+            example:
+              username: player3
+              email: player3@test.com
+              password: player3password
+      responses:
+        '201':
+          description: The user was created successfully.
+          headers:
+            Location:
+              description: URI of the new user.
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+
+  /users/{username}/:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      description: Retrieves one user by username.
+      responses:
+        '200':
+          description: Successfully retrieved the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+              example:
+                id: 1
+                username: player1
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      description: Deletes one user account.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '204':
+          description: The user was deleted successfully.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /games/:
+    get:
+      description: Retrieves all untraded games currently available in the hub.
+      responses:
+        '200':
+          description: Successfully retrieved the list of untraded games.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameSummary'
+              examples:
+                empty:
+                  value: []
+                with_games:
+                  value:
+                    - id: 1
+                      title: Game A
+                      owner: player1
+                    - id: 3
+                      title: Game C
+                      owner: player2
+
+  /games/{gameId}/:
+    parameters:
+      - name: gameId
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Retrieves one game by id.
+      responses:
+        '200':
+          description: Successfully retrieved the game details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetails'
+              examples:
+                digital:
+                  value:
+                    id: 1
+                    title: Game 1
+                    description: Game 1 description
+                    image_path: /images/game1.jpg
+                    is_digital: true
+                    is_traded: false
+                    owner_id: 1
+                physical:
+                  value:
+                    id: 2
+                    title: Game 2
+                    description: Game 2 description
+                    image_path: /images/game2.jpg
+                    is_digital: false
+                    is_traded: true
+                    owner_id: 2
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{username}/games/:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      description: Retrieves all games owned by one user.
+      responses:
+        '200':
+          description: Successfully retrieved the user game list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameSummary'
+              examples:
+                empty:
+                  value: []
+                with_games:
+                  value:
+                    - id: 1
+                      title: Game 1
+                      owner: player1
+                    - id: 2
+                      title: Game 2
+                      owner: player1
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      description: Adds a game for one user.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        description: JSON that contains data for the game.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameCreate'
+            examples:
+              physical:
+                value:
+                  title: Game 2
+                  description: Game 2 description
+                  is_digital: false
+                  image_path: /images/game2.jpg
+              digital:
+                value:
+                  title: Game 1
+                  description: Game 1 description
+                  is_digital: true
+      responses:
+        '201':
+          description: The game was created successfully.
+          headers:
+            Location:
+              description: URI of the new game.
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+
+  /users/{username}/games/{gameId}/:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: gameId
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      description: Deletes one game owned by one user.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '204':
+          description: The game was deleted successfully.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /trades/:
+    get:
+      description: Retrieves all trade requests.
+      responses:
+        '200':
+          description: Successfully retrieved the list of trades.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TradeSummary'
+              examples:
+                empty:
+                  value: []
+                with_trades:
+                  value:
+                    - id: 1
+                      status: Pending
+                      sender_game_id: 1
+                      receiver_game_id: 2
+                    - id: 2
+                      status: Accepted
+                      sender_game_id: 4
+                      receiver_game_id: 3
+
+  /trades/{tradeId}/:
+    parameters:
+      - name: tradeId
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Retrieves one trade request by id.
+      responses:
+        '200':
+          description: Successfully retrieved the trade details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TradeDetails'
+              examples:
+                pending:
+                  value:
+                    id: 1
+                    timestamp: '2026-04-04T14:12:00'
+                    status: Pending
+                    sender_game_id: 1
+                    receiver_game_id: 2
+                accepted:
+                  value:
+                    id: 2
+                    timestamp: '2026-04-04T14:25:00'
+                    status: Accepted
+                    sender_game_id: 4
+                    receiver_game_id: 3
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{username}/trades/:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      description: Creates a new trade request between two games.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        description: JSON that contains ids for sender and receiver games.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeCreate'
+            example:
+              sender_game_id: 1
+              receiver_game_id: 2
+      responses:
+        '201':
+          description: The trade was created successfully.
+          headers:
+            Location:
+              description: URI of the new trade.
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{username}/trades/{tradeId}/:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: tradeId
+        in: path
+        required: true
+        schema:
+          type: integer
+    put:
+      description: Updates the status of one trade request.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        description: JSON that contains the new trade status.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeStatusUpdate'
+            examples:
+              accepted:
+                value:
+                  status: Accepted
+              declined:
+                value:
+                  status: Declined
+      responses:
+        '204':
+          description: The trade status was updated successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
