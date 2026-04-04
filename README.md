@@ -41,7 +41,7 @@ python GameTrading/db.py
 
 * Run populate.py to add sample users, games and trades
 ```
-python GameTrading/populate.py
+python -m GameTrading.populate
 ```
 
 3. Running the API:
