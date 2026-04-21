@@ -50,12 +50,15 @@ We will consider our options regarding the architecture and prioritize things th
 
 
 ## Meeting 4.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** April 14
+* **PARTICIPANTS:** Roni Karppinen, Minttu Ukkola, Luan Trieu
+* **TEACHER:** Mika Oja
 
 ### Action points
-*List here the actions points discussed with assistants*
+* Flasker documentation should be like in the exercise.
+* Url variables could be also referenced
+* Collections are empty in documentation
+* Attributes also could be in components
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
