@@ -350,6 +350,45 @@ def test_get_all_trades(client, setup_trade_scenario):
     assert trade["sender_game_id"] == 1
     assert trade["receiver_game_id"] == 2
 
+def test_get_successful_trade_count_empty(client):
+    """Test successful trade counter when no trades exist."""
+    response = client.get("/api/trades/successful-count/")
+    assert response.status_code == 200
+    assert response.json == {"successful_trades": 0, "total_trades": 0}
+
+def test_get_successful_trade_count(client, setup_trade_scenario):
+    """Test successful trade counter with accepted and pending trades."""
+    client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 1, "receiver_game_id": 2},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    client.put(
+        "/api/users/player1/trades/1/",
+        json={"status": "Accepted"},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    client.post(
+        "/api/users/player1/games/",
+        json={"title": "Game C", "is_digital": True},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    client.post(
+        "/api/users/player2/games/",
+        json={"title": "Game D", "is_digital": True},
+        headers={"GameTradeApi-Key": "player2-key"},
+    )
+    client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 3, "receiver_game_id": 4},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    response = client.get("/api/trades/successful-count/")
+    assert response.status_code == 200
+    assert response.json == {"successful_trades": 1, "total_trades": 2}
+
 def test_create_trade_request(client, setup_trade_scenario):
     """Test creating a new trade request."""
     response = client.post("/api/users/player1/trades/", json={

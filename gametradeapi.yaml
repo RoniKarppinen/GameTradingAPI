@@ -13,6 +13,76 @@ components:
       in: header
       name: GameTradeApi-Key
 
+  parameters:
+    UsernameParam:
+      name: username
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Username of the user.
+
+    GameIdParam:
+      name: gameId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Id of the game.
+
+    TradeIdParam:
+      name: tradeId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Id of the trade request.
+
+  headers:
+    LocationHeader:
+      description: URI of the newly created resource.
+      schema:
+        type: string
+
+  examples:
+    UsersCollection:
+      value:
+        - id: 1
+          username: player1
+          email: player1@test.com
+        - id: 2
+          username: player2
+          email: player2@test.com
+
+    GamesCollection:
+      value:
+        - id: 1
+          title: Game A
+          owner: player1
+        - id: 3
+          title: Game C
+          owner: player2
+
+    UserGamesCollection:
+      value:
+        - id: 1
+          title: Game 1
+          owner: player1
+        - id: 2
+          title: Game 2
+          owner: player1
+
+    TradesCollection:
+      value:
+        - id: 1
+          status: Pending
+          sender_game_id: 1
+          receiver_game_id: 2
+        - id: 2
+          status: Accepted
+          sender_game_id: 4
+          receiver_game_id: 3
+
   schemas:
     UserCreate:
       type: object
@@ -182,6 +252,19 @@ components:
           type: integer
           nullable: true
 
+    TradeSuccessSummary:
+      type: object
+      required:
+        - successful_trades
+        - total_trades
+      properties:
+        successful_trades:
+          type: integer
+          minimum: 0
+        total_trades:
+          type: integer
+          minimum: 0
+
     Error:
       type: object
       required:
@@ -250,16 +333,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/User'
               examples:
-                empty:
-                  value: []
                 with_users:
-                  value:
-                    - id: 1
-                      username: player1
-                      email: player1@test.com
-                    - id: 2
-                      username: player2
-                      email: player2@test.com
+                  $ref: '#/components/examples/UsersCollection'
 
     post:
       description: Registers a new user.
@@ -279,9 +354,7 @@ paths:
           description: The user was created successfully.
           headers:
             Location:
-              description: URI of the new user.
-              schema:
-                type: string
+              $ref: '#/components/headers/LocationHeader'
         '400':
           $ref: '#/components/responses/BadRequest'
         '415':
@@ -289,11 +362,7 @@ paths:
 
   /users/{username}/:
     parameters:
-      - name: username
-        in: path
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/UsernameParam'
     get:
       description: Retrieves one user by username.
       responses:
@@ -334,24 +403,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/GameSummary'
               examples:
-                empty:
-                  value: []
                 with_games:
-                  value:
-                    - id: 1
-                      title: Game A
-                      owner: player1
-                    - id: 3
-                      title: Game C
-                      owner: player2
+                  $ref: '#/components/examples/GamesCollection'
 
   /games/{gameId}/:
     parameters:
-      - name: gameId
-        in: path
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/GameIdParam'
     get:
       description: Retrieves one game by id.
       responses:
@@ -385,11 +442,7 @@ paths:
 
   /users/{username}/games/:
     parameters:
-      - name: username
-        in: path
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/UsernameParam'
     get:
       description: Retrieves all games owned by one user.
       responses:
@@ -402,16 +455,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/GameSummary'
               examples:
-                empty:
-                  value: []
                 with_games:
-                  value:
-                    - id: 1
-                      title: Game 1
-                      owner: player1
-                    - id: 2
-                      title: Game 2
-                      owner: player1
+                  $ref: '#/components/examples/UserGamesCollection'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -443,9 +488,7 @@ paths:
           description: The game was created successfully.
           headers:
             Location:
-              description: URI of the new game.
-              schema:
-                type: string
+              $ref: '#/components/headers/LocationHeader'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -457,16 +500,8 @@ paths:
 
   /users/{username}/games/{gameId}/:
     parameters:
-      - name: username
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: gameId
-        in: path
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/UsernameParam'
+      - $ref: '#/components/parameters/GameIdParam'
     delete:
       description: Deletes one game owned by one user.
       security:
@@ -492,26 +527,26 @@ paths:
                 items:
                   $ref: '#/components/schemas/TradeSummary'
               examples:
-                empty:
-                  value: []
                 with_trades:
-                  value:
-                    - id: 1
-                      status: Pending
-                      sender_game_id: 1
-                      receiver_game_id: 2
-                    - id: 2
-                      status: Accepted
-                      sender_game_id: 4
-                      receiver_game_id: 3
+                  $ref: '#/components/examples/TradesCollection'
+
+  /trades/successful-count/:
+    get:
+      description: Auxiliary service endpoint that requests trade data and counts accepted trades.
+      responses:
+        '200':
+          description: Successfully retrieved successful trade analytics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TradeSuccessSummary'
+              example:
+                successful_trades: 4
+                total_trades: 10
 
   /trades/{tradeId}/:
     parameters:
-      - name: tradeId
-        in: path
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/TradeIdParam'
     get:
       description: Retrieves one trade request by id.
       responses:
@@ -541,11 +576,7 @@ paths:
 
   /users/{username}/trades/:
     parameters:
-      - name: username
-        in: path
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/UsernameParam'
     post:
       description: Creates a new trade request between two games.
       security:
@@ -565,9 +596,7 @@ paths:
           description: The trade was created successfully.
           headers:
             Location:
-              description: URI of the new trade.
-              schema:
-                type: string
+              $ref: '#/components/headers/LocationHeader'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -581,16 +610,8 @@ paths:
 
   /users/{username}/trades/{tradeId}/:
     parameters:
-      - name: username
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: tradeId
-        in: path
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/UsernameParam'
+      - $ref: '#/components/parameters/TradeIdParam'
     put:
       description: Updates the status of one trade request.
       security:

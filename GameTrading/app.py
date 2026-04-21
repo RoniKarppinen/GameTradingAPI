@@ -15,6 +15,7 @@ from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
 from sqlalchemy import or_
 from GameTrading.db import db, User, Game, Trade, ApiKey
+from GameTrading.trade_service import TradeAnalyticsService
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -375,6 +376,14 @@ class TradeCollection(Resource):
         return collection, 200
 
 
+class TradeSuccessCount(Resource):
+    """Auxiliary service for trade analytics."""
+
+    def get(self):
+        """Return totals for successful trades and all trades."""
+        return TradeAnalyticsService.successful_trade_summary(), 200
+
+
 class UserTradeCollection(Resource):
     """Resource for sending trade requests, allowing users to create a new
     trade request between two games owned by different users."""
@@ -578,6 +587,7 @@ api.add_resource(GameItem, "/api/games/<game:game>/")
 
 api.add_resource(TradeCollection, "/api/trades/")
 api.add_resource(TradeItem, "/api/trades/<trade:trade>/")
+api.add_resource(TradeSuccessCount, "/api/trades/successful-count/")
 
 api.add_resource(UserItem, "/api/users/<user:user>/")
 api.add_resource(UserGameCollection, "/api/users/<user:user>/games/")

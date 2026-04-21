@@ -88,6 +88,7 @@ The base URL for accesing the API locally:
 Primary entry points:
 * **User Registration:** `POST http://127.0.0.1:5000/api/users/`
 * **Game Hub:** `GET http://127.0.0.1:5000/api/games/`
+* **Auxiliary Trade Analytics Service:** `GET http://127.0.0.1:5000/api/trades/successful-count/`
 
 ## Database info
 * Database: SQLite version: 3.50.4
