@@ -79,7 +79,7 @@ python -m pylint GameTrading tests
 
 ## API entry point URL
 
-Currently the API is not deployed remotely anywhere.
+Currently the API is not deployed remotely anywhere. #TODO EDIT THIS
 
 
 The base URL for accesing the API locally:
