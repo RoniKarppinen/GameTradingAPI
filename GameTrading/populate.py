@@ -49,7 +49,7 @@ with app.app_context():
         timestamp=datetime.now(),
         sender_game=game1,
         receiver_game=game2,
-        status="Pending",
+        status="Accepted",
     )
     trade2 = Trade(
         timestamp=datetime.now(),

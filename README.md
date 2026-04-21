@@ -41,7 +41,7 @@ python GameTrading/db.py
 
 * Run populate.py to add sample users, games and trades
 ```
-python -m GameTrading.populate
+python GameTrading/populate
 ```
 
 3. Running the API:
@@ -79,7 +79,7 @@ python -m pylint GameTrading tests
 
 ## API entry point URL
 
-Currently the API is not deployed remotely anywhere.
+Currently the API is not deployed remotely anywhere. #TODO EDIT THIS
 
 
 The base URL for accesing the API locally:
