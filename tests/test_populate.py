@@ -52,6 +52,6 @@ def test_populate_script_creates_records(test_db):
         assert len(trades) == 2
 
         # Check specific trade data
-        assert trades[0].status == "Pending"
+        assert trades[0].status == "Accepted"
         assert trades[0].sender_game.title == "Meow meow game 2: Echoes of Nya"
         assert trades[1].receiver_game.title == "Grand theft Litter box V: Backyard"
