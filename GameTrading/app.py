@@ -92,7 +92,8 @@ class UserCollection(Resource):
         db.session.commit()
 
         location = api.url_for(UserItem, user=user)
-        return Response(status=201, headers={"Location": location})
+        response_data = {"id": user.id, "username": user.username, "apiKey": token}
+        return response_data, 201, {"Location": location}
 
     # Get all users
     def get(self):
