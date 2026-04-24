@@ -340,6 +340,7 @@ class UserGameItem(Resource):
 
         db.session.delete(game)
         db.session.commit()
+        TradeAnalyticsService.invalidate_cache()
 
         return "", 204
 
@@ -439,6 +440,7 @@ class UserTradeCollection(Resource):
 
         db.session.add(trade)
         db.session.commit()
+        TradeAnalyticsService.invalidate_cache()
 
         location = api.url_for(TradeItem, trade=trade)
         return Response(status=201, headers={"Location": location})
@@ -518,6 +520,7 @@ class UserTradeItem(Resource):
             trade.receiver_game.is_traded = True
 
         db.session.commit()
+        TradeAnalyticsService.invalidate_cache()
         return "", 204
 
     @staticmethod
