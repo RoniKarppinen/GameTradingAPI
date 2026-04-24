@@ -79,8 +79,16 @@ python -m pylint GameTrading tests
 
 ## API entry point URL
 
-Currently the API is not deployed remotely anywhere. #TODO EDIT THIS
+The Gametrade service is now deployed on Ubuntu 24.04 (CSC Pouta). The production stack utilizes Nginx as a reverse proxy, Gunicorn as the WSGI server, and Supervisor for process management.
 
+The API is accessible at the following public IP:
+'http://86.50.168.120/api/'
+
+
+Primary Endpoints:
+* **User Registration:** `POST http://86.50.168.120/api/users/`
+* **Game Hub:** `GET http://86.50.168.120/api/games/`
+* **Auxiliary Trade Analytics Service:** `GET http://86.50.168.120/api/trades/successful-count/`
 
 The base URL for accesing the API locally:
 'http://127.0.0.1:5000/api/'
