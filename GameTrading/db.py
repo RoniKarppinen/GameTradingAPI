@@ -30,6 +30,8 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 class ApiKey(db.Model):
+    """API key model used to authenticate user actions in protected endpoints."""
+
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(32), nullable=False, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
@@ -38,6 +40,7 @@ class ApiKey(db.Model):
 
     @staticmethod
     def key_hash(key):
+        """Hash a plain API key value before storing or comparing it."""
         return hashlib.sha256(key.encode()).digest()
 
 

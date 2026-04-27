@@ -29,8 +29,20 @@ api = Api(app)
 
 # Validation decorator
 def require_user_key(func):
+    """
+    Description: Validate a user API key from request headers before
+        executing a protected resource method.
+    Inputs:
+        - func: The resource method to protect with API key validation.
+    Outputs:
+        - Returns the wrapped function result if the API key is valid.
+    Exceptions:
+        - Raises Forbidden if the API key is missing or invalid.
+    """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
+        """Execute the wrapped function only when user key validation passes."""
         user = kwargs.get("user")
         key_hash = ApiKey.key_hash(request.headers.get("GameTradeApi-Key", "").strip())
         db_key = ApiKey.query.filter_by(user=user).first()
@@ -97,6 +109,14 @@ class UserCollection(Resource):
 
     # Get all users
     def get(self):
+        """
+        Description: Retrieve a list of all registered users.
+        Inputs: None
+        Outputs:
+            - Status code 200: A JSON array of user objects,
+                where each object contains id, username, and email.
+        Exceptions: None
+        """
         users = User.query.all()
         collection = []
         for u in users:
@@ -152,6 +172,15 @@ class UserItem(Resource):
         return "", 204
 
     def get(self, user):  # Get user by name
+        """
+        Description: Retrieve a specific user by username.
+        Inputs: The user object resolved from the username path parameter.
+        Outputs:
+            - Status code 200: A JSON object containing id and username.
+            - Status code 404: If the user does not exist.
+        Exceptions:
+            - If the user does not exist, a NotFound exception is raised.
+        """
 
         user = {"id": user.id, "username": user.username}
 
@@ -270,6 +299,7 @@ class UserGameCollection(Resource):
 
     @staticmethod
     def json_schema():
+        """Defines the JSON schema for validating game creation input."""
         schema = {"type": "object", "required": ["title", "is_digital"]}
         properties = schema["properties"] = {}
         properties["title"] = {"type": "string", "maxLength": 100}
@@ -544,12 +574,14 @@ class GameConverter(BaseConverter):
     """Converter for game objects."""
 
     def to_python(self, game_id):
+        """Resolve a game id from the route into a Game model instance."""
         game = Game.query.get(game_id)
         if game is None:
             raise NotFound
         return game
 
     def to_url(self, game):
+        """Convert a Game model instance into a route-safe id string."""
         return str(game.id)
 
 
@@ -557,12 +589,14 @@ class TradeConverter(BaseConverter):
     """Converter for trade objects."""
 
     def to_python(self, trade_id):
+        """Resolve a trade id from the route into a Trade model instance."""
         trade = Trade.query.get(trade_id)
         if trade is None:
             raise NotFound
         return trade
 
     def to_url(self, trade):
+        """Convert a Trade model instance into a route-safe id string."""
         return str(trade.id)
 
 
@@ -570,12 +604,14 @@ class UserConverter(BaseConverter):
     """Converter for user objects."""
 
     def to_python(self, username):
+        """Resolve a username from the route into a User model instance."""
         user = User.query.filter_by(username=username).first()
         if user is None:
             raise NotFound
         return user
 
     def to_url(self, user):
+        """Convert a User model instance into a route-safe username string."""
         return user.username
 
 

@@ -1,3 +1,5 @@
+"""Populate the database with initial users, games, API keys, and trades."""
+
 from datetime import datetime
 
 import secrets
