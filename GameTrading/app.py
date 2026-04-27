@@ -450,8 +450,21 @@ class UserTradeCollection(Resource):
 
         sender_game = Game.query.get(data["sender_game_id"])
         receiver_game = Game.query.get(data["receiver_game_id"])
+
+        if sender_game is None or receiver_game is None:
+            raise BadRequest(description="Sender or receiver game was not found")
+
+        if sender_game.owner_id != user.id:
+            raise Forbidden(description="You can only offer games you own")
+
+        if sender_game.is_traded or receiver_game.is_traded:
+            raise BadRequest(description="One or both games are already traded")
+
         sender_game_owner = sender_game.owner_id
         receiver_game_owner = receiver_game.owner_id
+
+        if receiver_game_owner is None:
+            raise BadRequest(description="Receiver game has no owner")
 
         if sender_game_owner == receiver_game_owner:
             raise BadRequest(description="You can't trade with yourself, you dummy")
@@ -531,7 +544,10 @@ class UserTradeItem(Resource):
         Exceptions:
             - If the request body is not valid JSON, an UnsupportedMediaType exception is raised.
         """
-        if trade.sender_game_id != user.id and trade.receiver_game_id != user.id:
+        sender_owner_id = trade.sender_game.owner_id if trade.sender_game else None
+        receiver_owner_id = trade.receiver_game.owner_id if trade.receiver_game else None
+
+        if user.id not in {sender_owner_id, receiver_owner_id}:
             raise Forbidden
         data = request.json
         if not data:
@@ -544,11 +560,21 @@ class UserTradeItem(Resource):
             raise BadRequest(description=str(e)) from e
 
         status = data["status"]
-        trade.status = status
+        previous_status = trade.status
 
         if status == "Accepted":
+            if trade.sender_game is None or trade.receiver_game is None:
+                raise BadRequest(description="Trade references missing game")
+
+            if previous_status != "Accepted" and (
+                trade.sender_game.is_traded or trade.receiver_game.is_traded
+            ):
+                raise BadRequest(description="One or both games are already traded")
+
             trade.sender_game.is_traded = True
             trade.receiver_game.is_traded = True
+
+        trade.status = status
 
         db.session.commit()
         TradeAnalyticsService.invalidate_cache()

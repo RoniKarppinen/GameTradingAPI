@@ -102,6 +102,30 @@ def test_delete_user(client, create_test_users):
     response = client.delete("/api/users/player1/", headers=create_test_users["player1"])
     assert response.status_code == 404
 
+def test_delete_user_forbidden_with_invalid_api_key(client, create_test_users):
+    """Test that deleting a user with an invalid API key is forbidden."""
+    response = client.delete(
+        "/api/users/player1/",
+        headers={"GameTradeApi-Key": "invalid-key"},
+    )
+    assert response.status_code == 403
+
+def test_delete_user_with_game_and_no_pending_trade(client, create_test_users):
+    """Test deleting a user who owns a game not involved in a pending trade."""
+    game_response = client.post(
+        "/api/users/player1/games/",
+        json={"title": "Solo Game", "is_digital": True},
+        headers=create_test_users["player1"],
+    )
+    assert game_response.status_code == 201
+
+    response = client.delete("/api/users/player1/", headers=create_test_users["player1"])
+    assert response.status_code == 204
+
+    with app.app_context():
+        player1 = User.query.filter_by(username="player1").first()
+        assert player1 is None
+
 def test_delete_user_with_pending_trades(client, create_test_users):
     """Test that games with pending trades are handled when user is deleted."""
     # Create games for both players
@@ -427,6 +451,42 @@ def test_trade_with_self_fails(client, setup_trade_scenario):
     assert response.status_code == 400
     assert b"You can't trade with yourself" in response.data
 
+def test_create_trade_forbidden_when_sender_game_not_owned(client, setup_trade_scenario):
+    """Test that a user cannot offer another user's game in a trade request."""
+    response = client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 2, "receiver_game_id": 1},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    assert response.status_code == 403
+
+def test_create_trade_rejects_already_traded_game(client, setup_trade_scenario):
+    """Test that traded games cannot be used for new trade requests."""
+    client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 1, "receiver_game_id": 2},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    client.put(
+        "/api/users/player1/trades/1/",
+        json={"status": "Accepted"},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    client.post(
+        "/api/users/player2/games/",
+        json={"title": "Game C", "is_digital": True},
+        headers={"GameTradeApi-Key": "player2-key"},
+    )
+
+    response = client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 1, "receiver_game_id": 3},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    assert response.status_code == 400
+    assert b"already traded" in response.data
+
 def test_create_trade_missing_sender_game_id(client, setup_trade_scenario):
     """Test that creating a trade without sender_game_id returns 400."""
     response = client.post("/api/users/player1/trades/", json={
@@ -464,6 +524,63 @@ def test_update_trade_status(client, setup_trade_scenario):
     # Verify the games are marked as traded
     game1_response = client.get("/api/games/1/")
     assert game1_response.json["is_traded"] is True
+
+def test_update_trade_status_allows_actual_owner_participant(client, setup_trade_scenario):
+    """Test that owner auth works even when game IDs differ from user IDs."""
+    client.post(
+        "/api/users/player1/games/",
+        json={"title": "Game C", "is_digital": True},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 3, "receiver_game_id": 2},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    response = client.put(
+        "/api/users/player1/trades/1/",
+        json={"status": "Accepted"},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    assert response.status_code == 204
+
+def test_update_trade_status_rejects_accepting_already_traded_game(
+    client, setup_trade_scenario
+):
+    """Test that pending trades cannot be accepted after a game has already traded."""
+    client.post(
+        "/api/users/player1/games/",
+        json={"title": "Game C", "is_digital": True},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 1, "receiver_game_id": 2},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    client.post(
+        "/api/users/player1/trades/",
+        json={"sender_game_id": 3, "receiver_game_id": 2},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+
+    accept_first = client.put(
+        "/api/users/player1/trades/1/",
+        json={"status": "Accepted"},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    assert accept_first.status_code == 204
+
+    accept_second = client.put(
+        "/api/users/player1/trades/2/",
+        json={"status": "Accepted"},
+        headers={"GameTradeApi-Key": "player1-key"},
+    )
+    assert accept_second.status_code == 400
+    assert b"already traded" in accept_second.data
 
 def test_update_trade_status_missing_field(client, setup_trade_scenario):
     """Test that updating a trade without the 'status' key raises a BadRequest."""
