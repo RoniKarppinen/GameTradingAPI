@@ -32,11 +32,7 @@ class GameTradeAPI:
             Sets the host address and starts a requests session.
         Inputs:
             host (str): The base URL of the API. Defaults to "http://86.50.168.120/".
-        Exceptions:
-            AssertionError: Raised if the host string does not start with "http".
         """
-        assert host.startswith("http"), "No protocol in host address"
-
         self.host = host
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
@@ -191,7 +187,7 @@ class GameTradeAPI:
             self.delete_auth()
             return
 
-        if response.status_code in (400, 415):
+        if response.status_code == 415:
             self.username = username
             console.print("[bold green]Logged in successfully![/bold green]")
             return
@@ -252,6 +248,9 @@ class GameTradeAPI:
         Inputs:
             username: The username of the user to check.
         """
+        if not username:
+            console.print("[bold red]Username cannot be empty.[/bold red]")
+            return
         user = self._get(f"/api/users/{username}/")
         if user:
             console.print(
@@ -308,6 +307,10 @@ class GameTradeAPI:
         Inputs:
             game_id: The ID of the game to be searched.
         """
+        if not game_id:
+            console.print("[bold red]Username cannot be empty.[/bold red]")
+            return
+
         game = self._get(f"/api/games/{game_id}/")
         if game:
             details = (
@@ -444,6 +447,10 @@ class GameTradeAPI:
         Inputs:
             trade_id: ID of the trade request.
         """
+        if not trade_id:
+            console.print("[bold red]Trade ID cannot be empty.[/bold red] ")
+            return
+
         trade = self._get(f"/api/trades/{trade_id}/")
         if trade:
             details = (
