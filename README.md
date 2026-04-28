@@ -9,7 +9,8 @@
 ├── GameTrading                     
 │   ├── app.py              # Main API logic
 │   ├── db.py               # Main database logic
-│   └── populate.py         # Populate the database with synthetic data
+│   ├── populate.py         # Populate the database with synthetic data
+|   └── client.py           # CLI to use the API
 └── tests
     ├── test_app.py         # Test the API logic
     ├── test_populate.py    # Test populate logic
@@ -25,6 +26,7 @@
 - pytest
 - pytest-cov
 - pylint
+- rich
 
 ## Setup & installation
 1. Install Dependencies:
@@ -77,6 +79,11 @@ python -m pytest
 python -m pylint GameTrading tests
 ```
 
+6. Running client
+* Run the following command from the root directory
+```
+python client.py
+```
 ## API entry point URL
 
 The Gametrade service is now deployed on Ubuntu 24.04 (CSC Pouta). The production stack utilizes Nginx as a reverse proxy, Gunicorn as the WSGI server, and Supervisor for process management.
