@@ -9,6 +9,7 @@ dependencies = [
     "Flask-RESTful",
     "Flask-SQLAlchemy",
     "jsonschema",
+    "rich",
 ]
 
 [project.optional-dependencies]
