@@ -308,7 +308,7 @@ class GameTradeAPI:
             game_id: The ID of the game to be searched.
         """
         if not game_id:
-            console.print("[bold red]Username cannot be empty.[/bold red]")
+            console.print("[bold red]Game ID cannot be empty.[/bold red]")
             return
 
         game = self._get(f"/api/games/{game_id}/")
