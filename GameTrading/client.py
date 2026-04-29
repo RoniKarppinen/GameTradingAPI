@@ -1,10 +1,9 @@
 """gridmap_client.py from
 https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/exercise-4-implementing-hypermedia-clients/
-was used as a base for this client"""
-
-"""tutorial from https://zetcode.com/python/rich/ was used for Rich formatting.
-Prompt was not covered in tutorial so Rich documentation 
-https://rich.readthedocs.io/en/stable/prompt.html 
+was used as a base for this client
+tutorial from https://zetcode.com/python/rich/ was used for Rich formatting.
+Prompt was not covered in tutorial so Rich documentation
+https://rich.readthedocs.io/en/stable/prompt.html
 provided additional information"""
 
 import sys
@@ -22,8 +21,8 @@ console = Console()
 class GameTradeAPI:
     """
     Description:
-    A client for interacting with the Game Trade API, handling authentication,
-    user management and lists, game lists, and trading endpoints.
+        A client for interacting with the Game Trade API, handling authentication,
+        user management and lists, game lists, and trading endpoints.
     """
 
     def __init__(self, host="http://86.50.168.120/"):
@@ -31,7 +30,7 @@ class GameTradeAPI:
         Description:
             Sets the host address and starts a requests session.
         Inputs:
-            host (str): The base URL of the API. Defaults to "http://86.50.168.120/".
+            host: The base URL of the API. Defaults to "http://86.50.168.120/".
         """
         self.host = host
         self.session = requests.Session()
@@ -475,8 +474,6 @@ class GameTradeAPI:
         Inputs:
             sender_game_id: The ID of the game the user is offering.
             receiver_game_id: The ID of the game the user is requesting.
-        Exceptions:
-            ValueError: If either sender_game_id or receiver_game_id cannot be set to an integer.
         """
         if not self.username:
             console.print(
