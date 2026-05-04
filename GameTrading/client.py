@@ -82,12 +82,6 @@ class GameTradeAPI:
                 console.print(
                     "[bold red]Error (404):[/bold red] The requested resource does not exist."
                 )
-            elif response.status_code == 403:
-                console.print(
-                    "[bold red]Error (403):[/bold red] You do not have permission to modify this resource."
-                )
-            elif response.status_code == 405:
-                console.print("[bold red]Error (405):[/bold red] Method not allowed.")
             else:
                 console.print(
                     f"[bold red]Error ({response.status_code}):[/bold red] An unexpected error occurred."
