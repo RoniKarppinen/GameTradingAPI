@@ -538,7 +538,7 @@ def main():
         )
     )
 
-    with GameTradeAPI("http://86.50.168.120/api/") as api:
+    with GameTradeAPI() as api:
         while True:
             console.print("\n[bold underline]Main Menu:[/bold underline]\n")
             console.print("[cyan]1.[/cyan] Register Account")
