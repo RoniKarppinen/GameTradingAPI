@@ -44,7 +44,7 @@ class GameTradeAPI:
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.session.close()
 
-    def set_auth(self, username, apikey):
+    def _set_auth(self, username, apikey):
         """
         Description:
             Sets session headers with provided API key and sets the active username.
@@ -55,7 +55,7 @@ class GameTradeAPI:
         self.username = username
         self.session.headers.update({"GameTradeApi-Key": apikey})
 
-    def delete_auth(self):
+    def _delete_auth(self):
         """
         Description:
             Clears the current authentication credentials from the session headers.
@@ -170,14 +170,14 @@ class GameTradeAPI:
             console.print(
                 f"[bold red]Login failed: User {username} does not exist.[/bold red]"
             )
-            self.delete_auth()
+            self._delete_auth()
             return
 
         if response.status_code == 403:
             console.print(
                 f"[bold red]Login failed: Invalid API Key for user {username}.[/bold red]"
             )
-            self.delete_auth()
+            self._delete_auth()
             return
 
         if response.status_code == 415:
@@ -188,7 +188,7 @@ class GameTradeAPI:
         console.print(
             f"[bold red]Unexpected error during login ({response.status_code}).[/bold red]"
         )
-        self.delete_auth()
+        self._delete_auth()
         return
 
     def get_all_users(self):
@@ -229,7 +229,7 @@ class GameTradeAPI:
         if response:
             console.print("[bold green]User created![/bold green]")
             key = response.json().get("apiKey")
-            self.set_auth(username, key)
+            self._set_auth(username, key)
             console.print(
                 f"[bold yellow]Your API Key: {key}[/bold yellow] (Saved to session)"
             )
@@ -268,7 +268,7 @@ class GameTradeAPI:
         if self._delete(f"/api/users/{username}/"):
             console.print(f"[bold green]User {username} deleted.[/bold green]")
             if username == self.username:
-                self.delete_auth()
+                self._delete_auth()
                 console.print(
                     "[yellow]You are now logged out for all eternity *insert dramatic music*.[/yellow]"
                 )
