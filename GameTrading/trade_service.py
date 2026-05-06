@@ -1,7 +1,9 @@
 """Auxiliary services for trade analytics."""
 
-from GameTrading.db import Trade
+import requests
+from flask import Flask, jsonify
 
+app = Flask(__name__)
 
 class TradeAnalyticsService:
     """Provides summary metrics derived from trade data."""
@@ -10,17 +12,14 @@ class TradeAnalyticsService:
 
     @staticmethod
     def fetch_trade_data():
-        """Fetch trade data in the same shape used by the trade collection endpoint."""
-        trades = Trade.query.all()
-        return [
-            {
-                "id": trade.id,
-                "status": trade.status,
-                "sender_game_id": trade.sender_game_id,
-                "receiver_game_id": trade.receiver_game_id,
-            }
-            for trade in trades
-        ]
+        """Fetch trade data by calling the API server instead of direct DB access."""
+        try:
+            response = requests.get("http://127.0.0.1:5000/api/trades/", timeout=2)
+            if response.status_code == 200:
+                return response.json()
+        except requests.RequestException:
+            pass
+        return []
 
     @staticmethod
     def count_successful_trades(trades):
@@ -47,3 +46,15 @@ class TradeAnalyticsService:
         cls._cached_summary = summary
 
         return dict(summary)
+
+@app.route("/api/analytics/successful-count/", methods=["GET"])
+def get_successful_count():
+    return jsonify(TradeAnalyticsService.successful_trade_summary()), 200
+
+@app.route("/api/analytics/invalidate/", methods=["POST"])
+def invalidate():
+    TradeAnalyticsService.invalidate_cache()
+    return "", 204
+
+if __name__ == "__main__":
+    app.run(port=5001, debug=True)

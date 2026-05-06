@@ -14,8 +14,14 @@ from werkzeug.exceptions import NotFound, BadRequest, UnsupportedMediaType, Forb
 from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
 from sqlalchemy import or_
+import requests
 from GameTrading.db import db, User, Game, Trade, ApiKey
-from GameTrading.trade_service import TradeAnalyticsService
+
+def _invalidate_trade_analytics_cache():
+    try:
+        requests.post("http://127.0.0.1:5001/api/analytics/invalidate/", timeout=1)
+    except requests.RequestException:
+        pass
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -371,7 +377,7 @@ class UserGameItem(Resource):
 
         db.session.delete(game)
         db.session.commit()
-        TradeAnalyticsService.invalidate_cache()
+        _invalidate_trade_analytics_cache()
 
         return "", 204
 
@@ -406,15 +412,6 @@ class TradeCollection(Resource):
                 }
             )
         return collection, 200
-
-
-class TradeSuccessCount(Resource):
-    """Auxiliary service for trade analytics."""
-
-    def get(self):
-        """Return totals for successful trades and all trades."""
-        return TradeAnalyticsService.successful_trade_summary(), 200
-
 
 class UserTradeCollection(Resource):
     """Resource for sending trade requests, allowing users to create a new
@@ -484,7 +481,7 @@ class UserTradeCollection(Resource):
 
         db.session.add(trade)
         db.session.commit()
-        TradeAnalyticsService.invalidate_cache()
+        _invalidate_trade_analytics_cache()
 
         location = api.url_for(TradeItem, trade=trade)
         return Response(status=201, headers={"Location": location})
@@ -577,7 +574,7 @@ class UserTradeItem(Resource):
         trade.status = status
 
         db.session.commit()
-        TradeAnalyticsService.invalidate_cache()
+        _invalidate_trade_analytics_cache()
         return "", 204
 
     @staticmethod
@@ -653,7 +650,6 @@ api.add_resource(GameItem, "/api/games/<game:game>/")
 
 api.add_resource(TradeCollection, "/api/trades/")
 api.add_resource(TradeItem, "/api/trades/<trade:trade>/")
-api.add_resource(TradeSuccessCount, "/api/trades/successful-count/")
 
 api.add_resource(UserItem, "/api/users/<user:user>/")
 api.add_resource(UserGameCollection, "/api/users/<user:user>/games/")
