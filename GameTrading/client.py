@@ -510,7 +510,9 @@ class GameTradeAPI:
         """
         try:
             # Connect directly to the separate autonomous microservice
-            response = requests.get("http://127.0.0.1:5001/api/analytics/successful-count/")
+            response = requests.get(
+                "http://86.50.168.120/api/analytics/successful-count/"
+            )
             if response.status_code == 200:
                 data = response.json()
                 console.print(
@@ -522,9 +524,13 @@ class GameTradeAPI:
                     )
                 )
             else:
-                console.print("[bold red]Failed to retrieve analytics from auxiliary service.[/bold red]")
+                console.print(
+                    "[bold red]Failed to retrieve analytics from auxiliary service.[/bold red]"
+                )
         except requests.RequestException:
-            console.print("[bold red]Could not connect to the Trade Analytics Service on port 5001.[/bold red]")
+            console.print(
+                "[bold red]Could not connect to the Trade Analytics Service on port 5001.[/bold red]"
+            )
 
 
 def main():
