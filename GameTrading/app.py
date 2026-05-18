@@ -15,7 +15,14 @@ from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
 from sqlalchemy import or_
 import requests
+from flask_caching import Cache
 from GameTrading.db import db, User, Game, Trade, ApiKey
+
+GAME_COLLECTION_CACHE_KEY = "game_collection_cache"
+
+def invalidate_game_cache():
+    """Clear the cached games list whenever the game collection changes."""
+    cache.delete(GAME_COLLECTION_CACHE_KEY)
 
 def _invalidate_trade_analytics_cache():
     try:
@@ -29,8 +36,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
     basedir, "GameTrade.db"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["CACHE_TYPE"] = "FileSystemCache"
+app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
 db.init_app(app)
 api = Api(app)
+cache = Cache(app)
 
 
 # Validation decorator
@@ -175,6 +185,9 @@ class UserItem(Resource):
 
         db.session.delete(user)
         db.session.commit()
+        
+        invalidate_game_cache()
+        
         return "", 204
 
     def get(self, user):  # Get user by name
@@ -201,6 +214,7 @@ class GameCollection(Resource):
     of all untraded games available in the trading hub.
     """
 
+    @cache.cached(timeout=None, key_prefix=GAME_COLLECTION_CACHE_KEY)
     def get(self):
         """
         Description: Retrieve a list of all untraded games available in the trading hub.
@@ -220,9 +234,10 @@ class GameCollection(Resource):
                 {
                     "id": g.id,
                     "title": g.title,
-                    "owner": g.owner.username,
+                    "owner": g.owner.username if g.owner else "Unknown",
                 }
             )
+
         return collection, 200
 
 
@@ -299,6 +314,8 @@ class UserGameCollection(Resource):
 
         db.session.add(game)
         db.session.commit()
+        
+        invalidate_game_cache()
 
         location = api.url_for(UserGameItem, game=game, user=user)
         return Response(status=201, headers={"Location": location})
@@ -377,6 +394,8 @@ class UserGameItem(Resource):
 
         db.session.delete(game)
         db.session.commit()
+        
+        invalidate_game_cache()
         _invalidate_trade_analytics_cache()
 
         return "", 204
@@ -574,6 +593,8 @@ class UserTradeItem(Resource):
         trade.status = status
 
         db.session.commit()
+        
+        invalidate_game_cache()
         _invalidate_trade_analytics_cache()
         return "", 204
 
