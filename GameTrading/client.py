@@ -505,18 +505,26 @@ class GameTradeAPI:
         """
         Description:
             Retrieves information about the number of successful and total trades and
-            displays them in a Rich panel.
+            displays them in a Rich panel. Connects directly to the auxiliary analytics
+            service running on port 5001.
         """
-        data = self._get("/api/trades/successful-count/")
-        if data:
-            console.print(
-                Panel(
-                    f"[bold green]Successful Trades:[/bold green] {data.get("successful_trades", "N/A")}\n"
-                    f"[bold cyan]Total Trades:[/bold cyan] {data.get("total_trades","N/A")}",
-                    title="Trade Analytics",
-                    border_style="yellow",
+        try:
+            # Connect directly to the separate autonomous microservice
+            response = requests.get("http://127.0.0.1:5001/api/analytics/successful-count/")
+            if response.status_code == 200:
+                data = response.json()
+                console.print(
+                    Panel(
+                        f"[bold green]Successful Trades:[/bold green] {data.get('successful_trades', 'N/A')}\n"
+                        f"[bold cyan]Total Trades:[/bold cyan] {data.get('total_trades','N/A')}",
+                        title="Trade Analytics",
+                        border_style="yellow",
+                    )
                 )
-            )
+            else:
+                console.print("[bold red]Failed to retrieve analytics from auxiliary service.[/bold red]")
+        except requests.RequestException:
+            console.print("[bold red]Could not connect to the Trade Analytics Service on port 5001.[/bold red]")
 
 
 def main():

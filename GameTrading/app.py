@@ -14,8 +14,21 @@ from werkzeug.exceptions import NotFound, BadRequest, UnsupportedMediaType, Forb
 from werkzeug.routing import BaseConverter
 from flask_restful import Api, Resource
 from sqlalchemy import or_
+import requests
+from flask_caching import Cache
 from GameTrading.db import db, User, Game, Trade, ApiKey
-from GameTrading.trade_service import TradeAnalyticsService
+
+GAME_COLLECTION_CACHE_KEY = "game_collection_cache"
+
+def invalidate_game_cache():
+    """Clear the cached games list whenever the game collection changes."""
+    cache.delete(GAME_COLLECTION_CACHE_KEY)
+
+def _invalidate_trade_analytics_cache():
+    try:
+        requests.post("http://127.0.0.1:5001/api/analytics/invalidate/", timeout=1)
+    except requests.RequestException:
+        pass
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,8 +36,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
     basedir, "GameTrade.db"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["CACHE_TYPE"] = "FileSystemCache"
+app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
 db.init_app(app)
 api = Api(app)
+cache = Cache(app)
 
 
 # Validation decorator
@@ -169,6 +185,9 @@ class UserItem(Resource):
 
         db.session.delete(user)
         db.session.commit()
+        
+        invalidate_game_cache()
+        
         return "", 204
 
     def get(self, user):  # Get user by name
@@ -195,6 +214,7 @@ class GameCollection(Resource):
     of all untraded games available in the trading hub.
     """
 
+    @cache.cached(timeout=None, key_prefix=GAME_COLLECTION_CACHE_KEY)
     def get(self):
         """
         Description: Retrieve a list of all untraded games available in the trading hub.
@@ -214,9 +234,10 @@ class GameCollection(Resource):
                 {
                     "id": g.id,
                     "title": g.title,
-                    "owner": g.owner.username,
+                    "owner": g.owner.username if g.owner else "Unknown",
                 }
             )
+
         return collection, 200
 
 
@@ -293,6 +314,8 @@ class UserGameCollection(Resource):
 
         db.session.add(game)
         db.session.commit()
+        
+        invalidate_game_cache()
 
         location = api.url_for(UserGameItem, game=game, user=user)
         return Response(status=201, headers={"Location": location})
@@ -371,7 +394,9 @@ class UserGameItem(Resource):
 
         db.session.delete(game)
         db.session.commit()
-        TradeAnalyticsService.invalidate_cache()
+        
+        invalidate_game_cache()
+        _invalidate_trade_analytics_cache()
 
         return "", 204
 
@@ -406,15 +431,6 @@ class TradeCollection(Resource):
                 }
             )
         return collection, 200
-
-
-class TradeSuccessCount(Resource):
-    """Auxiliary service for trade analytics."""
-
-    def get(self):
-        """Return totals for successful trades and all trades."""
-        return TradeAnalyticsService.successful_trade_summary(), 200
-
 
 class UserTradeCollection(Resource):
     """Resource for sending trade requests, allowing users to create a new
@@ -484,7 +500,7 @@ class UserTradeCollection(Resource):
 
         db.session.add(trade)
         db.session.commit()
-        TradeAnalyticsService.invalidate_cache()
+        _invalidate_trade_analytics_cache()
 
         location = api.url_for(TradeItem, trade=trade)
         return Response(status=201, headers={"Location": location})
@@ -577,7 +593,9 @@ class UserTradeItem(Resource):
         trade.status = status
 
         db.session.commit()
-        TradeAnalyticsService.invalidate_cache()
+        
+        invalidate_game_cache()
+        _invalidate_trade_analytics_cache()
         return "", 204
 
     @staticmethod
@@ -653,7 +671,6 @@ api.add_resource(GameItem, "/api/games/<game:game>/")
 
 api.add_resource(TradeCollection, "/api/trades/")
 api.add_resource(TradeItem, "/api/trades/<trade:trade>/")
-api.add_resource(TradeSuccessCount, "/api/trades/successful-count/")
 
 api.add_resource(UserItem, "/api/users/<user:user>/")
 api.add_resource(UserGameCollection, "/api/users/<user:user>/games/")
