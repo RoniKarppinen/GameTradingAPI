@@ -530,7 +530,7 @@ paths:
                 with_trades:
                   $ref: '#/components/examples/TradesCollection'
 
-  /trades/successful-count/:
+  /analytics/successful-count/:
     get:
       description: Auxiliary service endpoint that requests trade data and counts accepted trades.
       responses:
@@ -543,6 +543,13 @@ paths:
               example:
                 successful_trades: 4
                 total_trades: 10
+
+  /analytics/invalidate/:
+    post:
+      description: Auxiliary service endpoint to invalidate trade analytics cache.
+      responses:
+        '204':
+          description: Successfully invalidated cache.
 
   /trades/{tradeId}/:
     parameters:

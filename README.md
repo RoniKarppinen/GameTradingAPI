@@ -9,8 +9,7 @@
 ├── GameTrading                     
 │   ├── app.py              # Main API logic
 │   ├── db.py               # Main database logic
-│   ├── populate.py         # Populate the database with synthetic data
-|   └── client.py           # CLI to use the API
+│   └── populate.py         # Populate the database with synthetic data
 └── tests
     ├── test_app.py         # Test the API logic
     ├── test_populate.py    # Test populate logic
@@ -22,11 +21,12 @@
 - Flask
 - Flask-RESTful
 - Flask-SQLAlchemy
+- Flask-Caching
+- requests
 - jsonschema
 - pytest
 - pytest-cov
 - pylint
-- rich
 
 ## Setup & installation
 1. Install Dependencies:
@@ -79,11 +79,6 @@ python -m pytest
 python -m pylint GameTrading tests
 ```
 
-6. Running client
-* Run the following command from the root directory
-```
-python client.py
-```
 ## API entry point URL
 
 The Gametrade service is now deployed on Ubuntu 24.04 (CSC Pouta). The production stack utilizes Nginx as a reverse proxy, Gunicorn as the WSGI server, and Supervisor for process management.
@@ -95,15 +90,16 @@ The API is accessible at the following public IP:
 Primary Endpoints:
 * **User Registration:** `POST http://86.50.168.120/api/users/`
 * **Game Hub:** `GET http://86.50.168.120/api/games/`
-* **Auxiliary Trade Analytics Service:** `GET http://86.50.168.120/api/trades/successful-count/`
+* **Auxiliary Trade Analytics Service:** `GET http://86.50.168.120/api/analytics/successful-count/`
 
 The base URL for accesing the API locally:
 'http://127.0.0.1:5000/api/'
+(Note: Auxiliary service runs locally on port 5001)
 
 Primary entry points:
 * **User Registration:** `POST http://127.0.0.1:5000/api/users/`
 * **Game Hub:** `GET http://127.0.0.1:5000/api/games/`
-* **Auxiliary Trade Analytics Service:** `GET http://127.0.0.1:5000/api/trades/successful-count/`
+* **Auxiliary Trade Analytics Service:** `GET http://127.0.0.1:5001/api/analytics/successful-count/`
 
 ## Database info
 * Database: SQLite version: 3.50.4
