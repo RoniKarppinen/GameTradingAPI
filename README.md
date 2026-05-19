@@ -6,14 +6,18 @@
 ```text
 ├── README.md               # Documentation
 ├── pyproject.toml          # Project configuration and dependencies
+├── gametradeapi.yaml       # OpenAPI Specification
 ├── GameTrading                     
 │   ├── app.py              # Main API logic
+│   ├── client.py           # Client application
 │   ├── db.py               # Main database logic
-│   └── populate.py         # Populate the database with synthetic data
+│   ├── populate.py         # Populate the database with synthetic data
+│   └── trade_service.py    # Auxiliary trade analytics service
 └── tests
     ├── test_app.py         # Test the API logic
+    ├── test_db.py          # Test database logic
     ├── test_populate.py    # Test populate logic
-    └── test_db.py          # Test database logic
+    └── test_trade_service.py # Test trade analytics service logic
 ```
 
 ## Libraries used
@@ -23,6 +27,7 @@
 - Flask-SQLAlchemy
 - Flask-Caching
 - requests
+- rich
 - jsonschema
 - pytest
 - pytest-cov
@@ -57,7 +62,21 @@ cd GameTrading
 flask run
 ```
 
-4. Running tests
+4. Running the Auxiliary Trade Analytics Service:
+* Run the following command in the root directory in a separate terminal to start the auxiliary service on port 5001.
+
+```
+python GameTrading/trade_service.py
+```
+
+5. Running the Client:
+* Open a new terminal and run:
+
+```
+python GameTrading/client.py
+```
+
+6. Running tests
 * Run the following command in the root directory to run the tests and see the coverage.
 
 **Run this only if you are inside directory "GameTrading/"**
@@ -73,7 +92,7 @@ Then run this
 python -m pytest
 ```
 
-5. Running pylint
+7. Running pylint
 * Run the following command from the root directory
 ```
 python -m pylint GameTrading tests
